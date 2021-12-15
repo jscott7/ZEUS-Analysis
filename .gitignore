@@ -30,3 +30,7 @@
 *.exe
 *.out
 *.app
+
+# Physics files
+*.hbook
+*.rz
