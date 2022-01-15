@@ -36,7 +36,7 @@ default:: ana
 
 ana: 
 	gfortran $(CPPFLAGS) $(FFLAGS) $(FSRCS) $(FPPRCS) $(INCRCS) \
-		-o $(TARGETDIR)/ana 	\
+		-o $(TARGETDIR)/analysis.exe 	\
         -L /usr/lib/i386-linux-gnu \
 		-lmathlib -lpacklib -lkernlib -lpdflib804
 
