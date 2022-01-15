@@ -16,8 +16,8 @@ CFLAGS   = -Olimit 2000 -c -O
 # Define directories
 #
 TARGETDIR  := ./exe
-USERSRCS   := ./ 
-INCLUDEDIR := ../Include
+USERSRCS   := ./src
+INCLUDEDIR := ./inc
 OBJDIR     := ./obj
 CPPFLAGS   += -I $(INCLUDEDIR)
 VPATH      := $(USERSRCS):$(TARGETDIR)
