@@ -35,8 +35,8 @@
 *.hbook
 *.rz
 analysis.exe
-fort.50*
-fort.8*
+fort.500
+fort.83
 fort.999
 
 last.kumac
