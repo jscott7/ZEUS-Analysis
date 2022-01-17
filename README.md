@@ -19,10 +19,20 @@ Input
 * st97_n : Steering cards for '97 analysis
 
 Output
+* fort.998 : ?
 * fort.999 : Log file
-* israll96.hbook : Output ntuple
+* israll96/97.hbook : Output ntuple
 * fort.81 : Background bin
 * fort.82 : MC bin
 * fort.83 : Data bin
 * fort.84 : F2 ISR 
 * fort.85 : Errors
+* fort.50n : ?
+
+## Interpret Results
+
+This is done using PAW. Open PAW and Enter:
+
+>hi/file 1 israll97.hbook
+>hi/li 
+>hi/pl 105
