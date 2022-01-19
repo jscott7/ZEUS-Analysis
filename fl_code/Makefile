@@ -1,3 +1,5 @@
+# Make ZEUS Analysis code
+# Run: make analysis
 #
 # Flags for cpp compile fortran
 #
@@ -28,13 +30,13 @@ INCRCS  := $(foreach dir,$(USERSRCS),$(wildcard $(dir)/*.inc))
 CSRCS  := $(foreach dir,$(USERSRCS),$(wildcard $(dir)/*.c))
 JUNK   := $(foreach dir,$(USERSRCS),$(wildcard $(dir)/*~))
 
-default:: ana
+default:: analysis
+
+# PHONY ensures that make clean will run the recipe regardless of whether there is a file
+# named clean
 .PHONY: clean
 
-#main.o: $(CSRCS)
-#	$(CC) $(CFLAGS) $^ -o $(OBJDIR)/main.o
-
-ana: 
+analysis: 
 	gfortran $(CPPFLAGS) $(FFLAGS) $(FSRCS) $(FPPRCS) $(INCRCS) \
 		-o $(TARGETDIR)/analysis.exe 	\
         -L /usr/lib/i386-linux-gnu \

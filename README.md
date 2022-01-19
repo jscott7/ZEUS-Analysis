@@ -1,6 +1,9 @@
 # ZEUS-Analysis
 Code from Year 2000 Physics analysis for the ZEUS Particle Physics Detector
 
+## Prerequisties
+CERNLIB needs to be installed
+
 ## Build
  * make clean
  * make ana
@@ -19,7 +22,7 @@ Input
 * st97_n : Steering cards for '97 analysis
 
 Output
-* fort.998 : ?
+* fort.998 : F2 and Error
 * fort.999 : Log file
 * israll96/97.hbook : Output ntuple
 * fort.81 : Background bin
@@ -27,7 +30,14 @@ Output
 * fort.83 : Data bin
 * fort.84 : F2 ISR 
 * fort.85 : Errors
-* fort.50n : ?
+* fort.500 : xtilts (96)
+* fort.501 : xspreads (96)
+* fort.502 : ytilts (96)
+* fort.503 : yspreads (96)
+* fort.504 : xtilts (97)
+* fort.505 : yspreads (97)
+* fort.506 : ytilts (97) 
+* fort.507 : yspreads (97)
 
 ## Interpret Results
 
