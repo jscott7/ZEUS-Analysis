@@ -6,6 +6,7 @@ c Choice = 1 for 1996 and 2 for 1997
 	integer null,choice,num,num2,num3
 	character*1 a,b,c
 	character*9 fname, fname2
+        character(len = 12) cardspath
 
 	if (num.le.9) then
         write (a,'(i1)') num
@@ -24,7 +25,10 @@ c Choice = 1 for 1996 and 2 for 1997
 	end if	
 
 	if (choice.eq.1) then
-      open(unit=20,file=fname,status='old')
+        cardspath = '../cards/96/'
+        write(*,*) 'Reading steering card from ',cardspath//fname
+        write(999,*) 'Reading steering card from ',cardspath//fname
+        open(unit=20,file=cardspath//fname,status='old')
 	read(20,*,err=90) null
 	read(20,*,err=90) lumiscale
 	read(20,*,err=90) lumires
@@ -52,7 +56,10 @@ c Choice = 1 for 1996 and 2 for 1997
 	end if
 
       if (choice.eq.2) then
-	open(unit=20,file=fname2,status='old')
+        cardspath = '../cards/97/'
+        write(*,*) 'Reading steering card from ',cardspath//fname2
+        write(999,*) 'Reading steering card from ',cardspath//fname2
+        open(unit=20,file=cardspath//fname2,status='old')
 	read(20,*,err=80) null
 	read(20,*,err=80) lumiscale
 	read(20,*,err=80) lumires
