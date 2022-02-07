@@ -14,10 +14,12 @@ CERNLIB needs to be installed
 _Other files_
 
 Input
-* fort.41 : List of input ntuple files for '96 analysis
-* fort.45 : List of input ntuple files for '97 analysis
-* fort.46 : List of Background ntuple files
-* fort.47 : List of Monte Carlo (MC) ntuple files (97?)
+* fort.41 : List of Data ntuple files for '96 analysis
+* fort.42 : List of Background ntuple files for '96 analysis
+* fort.43 : List of Monte Carlo (MC) ntuple files for '96 analysis
+* fort.45 : List of Data ntuple files for '97 analysis
+* fort.46 : List of Background ntuple files for '97 analysis
+* fort.47 : List of Monte Carlo (MC) ntuple files for '97 analysis
 * st96_n : Steering cards with list of parameters. There can be many of these.
 * st97_n : Steering cards for '97 analysis
 

@@ -1028,7 +1028,7 @@ C
         WRITE (999,*) '     MEAN SPREAD Y :',YMEANSPREAD
 
         LT96FIRST=.false.
-	 do i = 1,782
+	 do i = 1,781
 	   write(500,*) xtilts(i)
          write(501,*) xspreads(i)
          write(502,*) ytilts(i)
@@ -1040,7 +1040,7 @@ C
        XTILT=-999.0
        YTILT=-999.0
 
-       do I = 1, 782
+       do I = 1, 781
 c       DO I=1,740
           IF (RUNNO(I).EQ.NRUN) THEN
              IRUN=I
