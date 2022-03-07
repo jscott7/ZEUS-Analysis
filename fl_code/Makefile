@@ -4,7 +4,7 @@
 # Flags for cpp compile fortran
 #
 # DEBUGFLAGS := -DDEBUG
-DEBUGFLAGS := -fcheck=all -g
+# DEBUGFLAGS := -fcheck=all -g
 # EXTRAFLAGS := -DMC -DKSHORTNT -DDSUBESSNT
 # EXTRAFLAGS := -DKSHORTNT -DDSUBESSNT
 EXTRAFLAGS := #

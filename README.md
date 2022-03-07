@@ -1,12 +1,13 @@
 # ZEUS-Analysis
 Code from Year 2000 Physics analysis for the ZEUS Particle Physics Detector
+[See the wiki for more detailed information](https://github.com/jscott7/ZEUS-Analysis/wiki)
 
 ## Prerequisties
 CERNLIB needs to be installed
 
 ## Build
  * make clean
- * make ana
+ * make analysis
 
 ## Run
 * analysis.exe : Executable
