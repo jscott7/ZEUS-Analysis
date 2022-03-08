@@ -1,19 +1,21 @@
 # Make ZEUS Analysis code
 # Run: make analysis
 #
-# Flags for cpp compile fortran
+# Flags for compile fortran
 #
-# DEBUGFLAGS := -DDEBUG
+# -fcheck=all : Add runtime checks, e.g for array bounds
+# -g : Add extra debug information
 # DEBUGFLAGS := -fcheck=all -g
-# EXTRAFLAGS := -DMC -DKSHORTNT -DDSUBESSNT
-# EXTRAFLAGS := -DKSHORTNT -DDSUBESSNT
 EXTRAFLAGS := #
 #
 # Flags for compliation
 #
+# -cpp : Enable preprocessing
 CPPFLAGS := -cpp $(DEBUGFLAGS) $(EXTRAFLAGS)
-FFLAGS   = -C
-CFLAGS   = -Olimit 2000 -c -O
+FFLAGS   = -O3 -C
+# -c : Compile to obj files -O optimimations -O3 higher level of optimisation
+# There's no real tangible difference for a single '96 batch between -O and -O3
+#CFLAGS   = -Olimit 2000 -c -O3
 #
 # Define directories
 #
