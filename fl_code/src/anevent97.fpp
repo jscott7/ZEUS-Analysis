@@ -1,7 +1,7 @@
 c ---------------------------------------------------------
       subroutine anevent97(Filename, idnt, histofill)
 c ---------------------------------------------------------
-c For *** FLISR ANALYSIS *** 
+c For *** FL-ISR ANALYSIS OF 1997 NTUPLES*** 
 c ---------------------------------------------------------
       implicit none
 
@@ -10,12 +10,12 @@ c ---------------------------------------------------------
 
       integer histofill, calnorm
       integer istat,NEvents,i,j,ierr
-	integer acceptisr, acceptempz,kpaccept
+      integer acceptisr, acceptempz,kpaccept
       integer processed, idnt
-	real beamcorq
-	real temp,datawt,mcwt
+      real beamcorq
+      real temp,datawt,mcwt
 
-	real l(4), lp(4), p(4), v1(4), ans
+      real l(4), lp(4), p(4), v1(4), ans
 
       save processed
       data processed/0/
@@ -23,10 +23,10 @@ c ---------------------------------------------------------
       integer count
 c      save count
 c      data count/0/
-	logical vfirst
-	save vfirst
-	data vfirst/.true./
-	real xmin,xmax,ymean
+      logical vfirst
+      save vfirst
+      data vfirst/.true./
+      real xmin,xmax,ymean
 
 c --- Open the data file
       write(*,*) Filename
@@ -57,7 +57,7 @@ c
 
       write (*,*) 'ANALYSE: File contains ',NEvents,' Events'
       write (999,*) 'ANALYSE: File contains ',NEvents,' Events'
-	count = 0
+      count = 0
 
 c ----------------------------------------
 c Loop over contents of this ntuple
@@ -82,17 +82,18 @@ c ---------------------------------------------
 c 3 bad events in MC (undefined CAL energy) - Reject
 c ---------------------------------------------
 	  if ((cal_xp**2+cal_yp**2).lt.0.) then
-    	     write(*,*) 'ERROR: NTUPLE INPUT BAD'
-	     goto 10
-	  end if
+            write(*,*) 'ERROR: NTUPLE INPUT BAD'
+	    goto 10
+	 end if
+
 c ------------------------------------------
 c Do ISR background addition
 c ------------------------------------------
-            call bgdlumi97(histofill)
+         call bgdlumi97(histofill)
 
-            WT_VTX = 1.0
+         WT_VTX = 1.0
 
-	      if (histofill.eq.3) then
+         if (histofill.eq.3) then
 C ===========================================
 C === GET A WEIGHT FOR VERTEX REWEIGHTING ===
 C ===========================================
@@ -102,78 +103,79 @@ c               call Rewt_Vtx_Isr(MC_ZV,0,WT_VTX,Ierr)
 c               ELSEIF (YEAR.EQ.1997) THEN
                  CALL VTX_WEIGHT(MC_ZV,WT_VTX,971,97,0)
 c               ENDIF
+
 c ------------------------------------------
 c Do lumi correction for ISR MC
 c ------------------------------------------            
-               call corrmclumig97         
-		  end if
+            call corrmclumig97         
+         end if
 
 c ------------------------------------------
 c General corrections and calculations F2ISR
 c ------------------------------------------
-            call corrections97
-         	  electron_en = corrected_en
-            electron_th = best_th
+         call corrections97
+         electron_en = corrected_en
+         electron_th = best_th
 
-            call isr_calculate97
+         call isr_calculate97
 
 c ------------------------------------------
 c Now apply cuts
 c ------------------------------------------               
-            acceptisr = 0
-	      acceptempz = 0
-		  calnorm = 0
-		  kpaccept = 0
+         acceptisr = 0
+         acceptempz = 0
+         calnorm = 0
+         kpaccept = 0
 
-      call isr_cuts97(acceptisr, acceptempz,kpaccept,
+         call isr_cuts97(acceptisr, acceptempz,kpaccept,
      &                         calnorm,histofill)
 c ------------------------------------------
 c Calculate Weights
-c ------------------------------------------           
-		  if ((acceptisr.eq.1).or.(acceptempz.eq.1)) then
+c ------------------------------------------         
+         if ((acceptisr.eq.1).or.(acceptempz.eq.1)) then
 
 c ------------------------------------------
 c Montecarlo
 c ------------------------------------------
-               if (histofill.eq.3) then
-c	            if (year.eq.1996) then
-c                    call Q2WTNEW96(q2_tru, mcwtq2, mcinput)
-c	            else if (year.eq.1997) then
-	               call Q2WTNEW97(q2_tru, mcwtq2, mcinput)
-c	            end if
-		        call f2wt97
-	            bpcor = beamcorq(Zgamma,q2_el,2,ierr)
-c			    bpcor = 1.0
-			 else
+            if (histofill.eq.3) then
+c	        if (year.eq.1996) then
+c                  call Q2WTNEW96(q2_tru, mcwtq2, mcinput)
+c	        else if (year.eq.1997) then
+	       call Q2WTNEW97(q2_tru, mcwtq2, mcinput)
+c	        end if
+	       call f2wt97
+	       bpcor = beamcorq(Zgamma,q2_el,2,ierr)
+c	        bpcor = 1.0
+	    else
 
 c ------------------------------------------
 c Data / Background
 c ------------------------------------------
-                  call lumiacceptance(RUN_NUM, acceptance)
-               end if
-	      end if
+               call lumiacceptance(RUN_NUM, acceptance)
+            end if
+	 end if
 
 c ----------------------------------------------
 c Normalise background - for total E-Pz > 62GeV.
 c ----------------------------------------------
-	      if (calnorm.eq.1) then
-		     if (empztot.gt.bgdnormal) then
-				if (histofill.eq.1) then
-				   datanorm = datanorm + 1.
-	            else if (histofill.eq.20) then
-				   backnorm = backnorm + 1.
-	            end if
-	         end if
-	      end if
+	 if (calnorm.eq.1) then
+	    if (empztot.gt.bgdnormal) then
+	       if (histofill.eq.1) then
+	          datanorm = datanorm + 1.
+	       else if (histofill.eq.20) then
+	          backnorm = backnorm + 1.
+	       end if
+	    end if
+	 end if
 
 c ------------------------------------------
 c Fill histos & count in bins
 c ------------------------------------------
-            if (acceptisr.eq.1) then 	
-	        call count_in_bins(histofill)
-              call isr_histos97(histofill)
-              count = count + 1 	    
-	      end if
+         if (acceptisr.eq.1) then
+	    call count_in_bins(histofill)
+            call isr_histos97(histofill)
+            count = count + 1    
+	 end if
 
 c ------------------------------------------
 c Fill KP Histos
@@ -226,16 +228,16 @@ c	end if
 c ------------------------------------------
 c Fill E-Pz Histos
 c ------------------------------------------
-		  if (acceptempz.eq.1) then
-	         call empzfill97(histofill)
-	      end if
+	 if (acceptempz.eq.1) then
+	    call empzfill97(histofill)
+	 end if
 
-         end if
+      end if
 10	continue
       enddo
     
       write(*,*) 'ISR events', count
-	write(999,*) 'ISR events', count
+      write(999,*) 'ISR events', count
 
 c ------------------------------------------     
 c All done, so clean up this file

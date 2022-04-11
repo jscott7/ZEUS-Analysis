@@ -1,13 +1,12 @@
 c ---------------------------------------------------------
       subroutine anevent96(Filename, idnt, histofill)
 c ---------------------------------------------------------
-c For *** FLISR ANALYSIS for 1996 ntuples *** 
+c For *** FL-ISR ANALYSIS of 1996 ntuples *** 
 c ---------------------------------------------------------
       implicit none
 
 #include"common96.inc"
 #include"local.inc"
-
 
       integer histofill, calnorm
       integer istat,NEvents,i,j,ierr
@@ -111,7 +110,7 @@ C ===========================================
 
 c               IF (YEAR.EQ.1996) THEN
 c                CALL VTX_WEIGHT(MC_ZV,WT_VTX,963,96,0)
-               call Rewt_Vtx_Isr(MC_ZV,0,WT_VTX,Ierr)
+            call Rewt_Vtx_Isr(MC_ZV,0,WT_VTX,Ierr)
 c                ELSEIF (YEAR.EQ.1997) THEN
 c                 CALL VTX_WEIGHT(MC_ZV,WT_VTX,971,97,0)
 c               ENDIF
@@ -251,7 +250,6 @@ c ------------------------------------------
       write(*,*) 'ISR events', count
       write(999,*) 'ISR events', count
 
-
 c ------------------------------------------     
 c All done, so clean up this file
 c ------------------------------------------    
@@ -261,4 +259,3 @@ c ------------------------------------------
      
       return
       end
-
