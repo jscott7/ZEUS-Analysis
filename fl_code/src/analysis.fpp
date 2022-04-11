@@ -1,37 +1,37 @@
 c ----------------------------
-	program main
+      program main
 c ----------------------------
-	implicit none
+      implicit none
 
 #include "readdata.inc"
 #include "local.inc"
 	
-	INTEGER I,CHOICE,num
-	integer histofill
-   	real x1(50)
-	real f21(50)
+      INTEGER I,CHOICE,num
+      integer histofill
+      real x1(50)
+      real f21(50)
 
 C ------------------------------
 C --- INPUT NTUPLE FILENAMES ---
 C ------------------------------
-	WRITE(*,*) 'READ FROM :  '
-	WRITE(*,*) '------------------------------------------'
-	WRITE(*,*) '            1 - Do 96 FL/ISR'
-	WRITE(*,*) '            2 - Do 97 FL/ISR'
-	WRITE(*,*) '            3 - Do all FL/ISR'
-	WRITE(*,*) '------------------------------------------'
-	READ(*,*) CHOICE
+      WRITE(*,*) 'READ FROM :  '
+      WRITE(*,*) '------------------------------------------'
+      WRITE(*,*) '            1 - Do 96 FL/ISR'
+      WRITE(*,*) '            2 - Do 97 FL/ISR'
+      WRITE(*,*) '            3 - Do all FL/ISR'
+      WRITE(*,*) '------------------------------------------'
+      READ(*,*) CHOICE
 
-	num =1
-	i = 1
-	if (choice.eq.3) num=26
-	do i = 1,num
+      num = 1
+      i = 1
+      if (choice.eq.3) num=26
+      do i = 1,num
 c ------------------------------------------
 c Initialisation
 c ------------------------------------------
-      call isr_init(choice,i)
+        call isr_init(choice,i)
 	
-      call crumpet
+        call crumpet
 
 c ------------------------------------------
 c Run over all relevant Ntuples.
