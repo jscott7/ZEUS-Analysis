@@ -87,9 +87,3 @@ c       READ(*,*) info.c16res
 c       retcode = 1
 c	 END IF
 c	END
-
-
-
-
-
-
