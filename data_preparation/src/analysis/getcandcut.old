@@ -1,0 +1,41 @@
+c ------------------------------------------
+      subroutine getcandcut(vtx)
+c ------------------------------------------
+c CorAndCut
+c ------------------------------------------
+      
+      implicit none
+
+#include "common.inc"
+
+      real vtx(3)
+      REAL         empz1, px1, py1, et1, gamma1
+      REAL         empz2, px2, py2, et2, gamma2
+      REAL         dum1, dum2, dum3
+      integer Ierr
+      logical ITSDAT
+      
+      if (montecarlo) then
+         ITSDAT = .false.
+      else
+         ITSDAT = .true.
+      end if
+
+      CALL CorAndCut(vtx, NrEcells, CellList,
+     &     YEAR, ITSDAT,
+     &     empz1, px1, py1, et1, gamma1,
+     &     empz2, px2, py2, et2, gamma2,
+     &     dum1, dum2, dum3, Ierr)
+
+c -----------------------------------------
+c Hadronic values corrected for  backsplashcut
+c and energy correction.
+c -----------------------------------------
+      y_jbcor = dum1
+      EmPzCor = empz2
+      PtCor = sqrt(px2**2+py2**2)
+      EtCor    = et2
+      x_jbcor = dum3
+
+      return 
+      end 

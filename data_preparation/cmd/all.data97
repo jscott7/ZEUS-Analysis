@@ -1,0 +1,41 @@
+#!/bin/sh -f
+#
+# Submit all 97 data ISR events
+#
+sub.data97 2 M 1
+sub.data97 2 M 2
+sub.data97 2 M 3
+sub.data97 3 M 4
+sub.data97 2 M 5
+sub.data97 3 M 6
+sub.data97 2 M 7
+sub.data97 3 M 8
+sub.data97 2 L 10
+sub.data97 2 L 11
+sub.data97 2 L 12
+sub.data97 3 L 13
+
+sub.data97 2 L 14
+sub.data97 3 L 15
+sub.data97 2 L 16
+sub.data97 3 L 17
+sub.data97 2 L 18
+sub.data97 3 L 19
+sub.data97 2 L 20
+sub.data97 3 L 21
+sub.data97 2 L 22
+sub.data97 3 L 23
+
+sub.data97 3 L 24
+sub.data97 2 L 25
+sub.data97 3 L 271
+sub.data97 2 L 28
+sub.data97 3 L 29
+sub.data97 2 L 300
+
+
+
+
+
+
+

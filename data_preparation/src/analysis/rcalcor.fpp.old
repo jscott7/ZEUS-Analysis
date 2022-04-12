@@ -1,0 +1,584 @@
+C     ===========================
+      SUBROUTINE RcalCorr(status)
+C     ===========================
+c     Modification of calCorr. 
+c     Scale factors for individual RCAL EMC Cells are implemented 
+c     ====> See routine RcalCor for documentation.
+c 
+c     NOTE: Calls Subroutine RcalCor( Poser, Factor)
+c           input:  Poser
+c           output: Factor
+c     *****************************************************************
+c       Author:  N. Tuning
+c       Version: 22/04/98
+c
+c       Modification: M. Wodarczyk 9-June-98
+c         Make clear that monte carlo is not corrected
+c
+c     *****************************************************************
+c
+c
+C     ==========================
+C      subroutine calCorr(status)
+C     ==========================y
+C Apply 1.06 to BCAL energy and 1.025 to RCAL energy
+C
+c     *****************************************************************
+c       Author:  Jon Labs
+c       Version: 1.0 (22/05/96)
+c
+c       Purpose: Apply corrections to cal energy in the data
+c                to account for the 6% discrepency observed in BCAL and
+c                2.5% in RCAL in the absolute energy scale
+C**********************************************************************
+C
+C                for 95 data and for MC>=num95v2.1
+C          the present recommendation is to apply 5% in the BCAL
+C
+C**********************************************************************
+C This is how it has to be used (J. Labs):
+C
+C This is the first release of the energy scale routine, CALCORR, for adjusting
+C the energy calibration of FCAL, BCAL and RCAL energies.  Very simply, if the
+C data is physics data, it multiplies event by event the cal energy and
+C imbalance (caltru_e and caltru_imbal) by 1.06 if BCAL, 1.025 if RCAL and
+C 1.0 if FCAL.  If the data is MC data, all caltru_e and caltru_imbal entries
+C are multiplied by 1.0.  This routine is designed to store the correction
+C information in the data itself so that routines that use the CAL information
+C *can be* made to look up the correction information without referring to
+C external information.
+C
+C However, no routines that look up this information presently exist.  So some
+C caution has to be taken when using CALCORR:
+C
+C 1) SRTDELEC, or any other existing version of SRTD energy correction, should
+C   be called before CALCORR, otherwise the electron energy returned by
+C   SRTDELEC will be over corrected.  Wouter Verkerke will provide a
+C   modification to his routine soon so that this will no longer be an issue.
+C 2) It cannot be called before corrections based on KP data, for similar
+C    reasons.
+C 3) Noisup94, or any existing noise suppression routine, should be called
+C   before CALCORR.  A volunteer is needed to study the effect on Noisup94 when
+C   CALCORR is called first.
+C 4) Sinistra, and other electron finders, should be called before CALCORR.
+C   The effect of CALCORR on the electron finders, at least Sinistra, needs to
+C   be studied, and we are looking for a volunteer.
+C 5) The island finder should be called before CALCORR.  A volunteer
+C   is needed to study the effect of calling CALCORR before the island finder.
+C 6) The condensates table, CCONSA, would have to be rebuilt.
+C
+C There are probably some other routines that can be affected if CALCORR is
+C called first.  Be on the alert.
+C
+C The corrections that have been applied are recorded in the CCOR table in
+C the ccor_foffset and ccor_roffset words, which are no longer used in
+C the reconstruction.  Their value is set to 100.0 by the CAL reconstruction.
+C The version number of the routine and the corrections for the F/R/BCAL are
+C packed into these two words as follows:
+C
+C          --------------------------------------------------------
+C          | word         |  16 MSB's         |    16 LSB's       |
+C          --------------------------------------------------------
+C          | ccor_foffset |(fcal corr)*32767.5|(version #)*10.    |
+C          | ccor_roffset |(bcal corr)*32767.5|(rcal corr)*32767.5|
+C          --------------------------------------------------------
+C
+C To find out if the correction has been applied to the data, one can do the
+C following:
+C
+C          integer ifoffset, iroffset
+C          equivalence (ifoffset, ccor_foffset)
+C          equivalence (iroffset, ccor_roffset)
+C
+C          call fettab(ccor, id, 1)
+C          if (ccor_foffset.eq.100.) then
+Cc            no correction has been applied
+C          else
+Cc            unpack the bcal correction, for example
+C             correction = ibits(iroffset, 16, 16)/32767.5
+C          endif
+C
+C If the routine is called twice for the same event, it will not apply the
+C correction the second time.  This routine will work on the RDST's and
+C miniDST's, and the tables it requires are of course the CALTRU tables and the
+C CCOR table.
+C************************************************************************************
+c
+c       Input:  none
+c       Output:
+c                status =  1 if routine was called and executed successfully
+c                            but no correction was applied
+c                          0 if routine was called and executed successfully
+c                            and a correction was applied
+c                         -1 if there is no record as to whether or not
+c                            the correction has already been made; no
+c                            correction is then made
+c
+c       Description:
+c
+c                On an event by event basis, multiply the FCAL, BCAL and
+c                RCAL energies by 1.0, 1.06 and 1.025, respectively, to
+c                real data, and 1.0, 1.0 and 1.0, respectively to MC data.
+c
+CCC  for 95: apply 1.05 in the BCAL
+c
+c                The corrections are recorded in the CCOR table in the
+c                CCOR_Foffset and CCOR_Roffset words.  Previously, these
+c                words recorded the timing offset corrections determined by
+c                Ioannis Gialas for the reprocessing of 1993 data.  Those
+c                corrections for needed due to the aging of the pipeline
+c                chips, which were later replaced during the 1993-1994
+c                shutdown.  Since then, aging effects have not been observed,
+c                and no such corrections have
+c                been applied to the data since.  So no information is
+c                given by these entries in the CCOR table.  When there is
+c                no such correction applied, CCOR_foffset and CCOR_roffset
+c                are both set to 100.0
+c
+c                Method of approach:
+c                1.) determine if this routine has already been called for
+c                    this event; if so, return
+c                2.) determine if this is MC or real data; choose the
+c                    appropriate corrections for FCAL, BCAL and RCAL
+c                3.) scale caltru_e by the corrections
+c                4.) scale caltru_imbal by the corrections
+c                5.) refill caltru
+c                6.) record corrections in ccor_foffset and ccor_roffset
+c                7.) exit
+c
+c                If the user wants to find out what corrections have been
+c                applied, they are packed as follows:
+c                    --------------------------------------------------------
+c                    | word         |  16 MSB's         |    16 LSB's       |
+c                    --------------------------------------------------------
+c                    | ccor_foffset |(fcal corr)*32767.5| routine version # |
+c                    | ccor_roffset |(bcal corr)*32767.5|(rcal corr)*32767.5|
+c                    --------------------------------------------------------
+c                    So to extract, for example,  the correction applied to
+c                    fcal:
+c
+c                       real fcorrection
+c                       integer ifoffset
+c                       equivalence (ifoffset, ccor_foffset)
+c                       call fettab(ccor, id, 1)
+c                       fcorrection = ibits(ifoffset, 16, 16)/32767.5
+c
+c     *****************************************************************
+ 
+      implicit none
+ 
+#include "partap.inc"
+#include "zdskey.inc"
+#include "caltru.inc"
+#include "fmckin.inc"
+#include "ccor.inc"
+ 
+      integer status
+
+c
+c local variables
+c
+C      integer cnt
+C      Logical MonteCarlo
+C      real scale
+C 
+c
+c local variables
+c
+      integer cnt
+      real    fscale, bscale, rscale
+      integer ifoffset, iroffset
+      equivalence(ifoffset, ccor_foffset)
+      equivalence(iroffset, ccor_roffset)
+ 
+c
+c parameters
+c
+      integer CAL_CORRECTION_VERSION
+      parameter (CAL_CORRECTION_VERSION = 10)
+      real    FSCALE_DATA, BSCALE_DATA, RSCALE_DATA
+      integer VERSION_FSCALE_DATA_PACKED, BRSCALE_DATA_PACKED
+      parameter (FSCALE_DATA = 1.0)
+cc for 95 apply 1.05 in BCAL
+cc    parameter (BSCALE_DATA = 1.06)
+      parameter (BSCALE_DATA = 1.05)
+      parameter (RSCALE_DATA = 1.025)
+      parameter (VERSION_FSCALE_DATA_PACKED =
+     &   (int(FSCALE_DATA*32767.5)*2**16) + CAL_CORRECTION_VERSION)
+      parameter (BRSCALE_DATA_PACKED =
+     &   (int(BSCALE_DATA*32767.5)*2**16) + int(RSCALE_DATA*32767.5))
+ 
+      real    FSCALE_MC, BSCALE_MC, RSCALE_MC
+      integer VERSION_FSCALE_MC_PACKED, BRSCALE_MC_PACKED
+      parameter (FSCALE_MC = 1.0)
+      parameter (BSCALE_MC = 1.0)
+      parameter (RSCALE_MC = 1.0)
+      parameter (VERSION_FSCALE_MC_PACKED =
+     &   (int(FSCALE_MC*32767.5)*2**16) + CAL_CORRECTION_VERSION)
+      parameter (BRSCALE_MC_PACKED =
+     &   (int(BSCALE_MC*32767.5)*2**16) + int(RSCALE_MC*32767.5))
+ 
+      logical MonteCarlo
+      logical calcorfirst
+      data calcorfirst /.true./
+        
+      If (calcorfirst) then
+         write (*,*) ' -------------------'
+         write (*,*) ' '
+         write (*,*) '    FIRST CALL TO' 
+         write (*,*) '      RCALCOR '
+         write (*,*) ' '
+         write (*,*) '  FCAL DATA SCALE :',FSCALE_DATA
+         write (*,*) '  BCAL DATA SCALE :',BSCALE_DATA
+         write (*,*) '  RCAL DATA SCALE :',RSCALE_DATA
+         write (*,*) '  FCAL DATA SCALE VERSION :',
+     + VERSION_FSCALE_DATA_PACKED
+         write (*,*) '  B/RCAL DATA SCALE VERSION :',
+     + BRSCALE_DATA_PACKED
+         write (*,*) ' '
+         write (*,*) '  FCAL MC SCALE :',FSCALE_MC
+         write (*,*) '  BCAL MC SCALE :',BSCALE_MC
+         write (*,*) '  RCAL MC SCALE :',RSCALE_MC
+         write (*,*) '  FCAL MV SCALE VERSION :',
+     + VERSION_FSCALE_MC_PACKED
+         write (*,*) '  B/RCAL MC SCALE VERSION :',
+     + BRSCALE_MC_PACKED
+         write (*,*) ' -------------------'
+         calcorfirst = .false.
+      endif
+
+c
+c give the defaults return status
+c
+      status = 0
+ 
+c
+c I don't want to allow the user to call both calcorr and rcalcorr 
+c on the same event.  calcorr needs CCOR to exist and puts a value
+c in ccor_foffset that is not 100.
+c if ccor_foffset == 100 then I am safe that calcorr was not called.
+c
+      if (coutab(CCOR).le.0) then
+         status = -1.
+C         return
+      endif
+ 
+      call fettab(CCOR, id, 1)
+      if (ccor_foffset.ne.100.) then
+         status = 1
+C         return
+      endif
+
+c
+c now record that this correction has been made so that it is not
+c made again.
+c
+      ccor_foffset = 99999  ! mark ccor_foffset as changed (i.e. not 100)
+      call reptab(CCOR)
+ 
+ 
+      MonteCarlo = (coutab(FMCKIN).gt.0)
+
+c
+c Is this data or MC?  Record what correction will be applied
+c
+      ifoffset = VERSION_FSCALE_DATA_PACKED
+      iroffset = BRSCALE_DATA_PACKED
+ 
+      fscale = FSCALE_DATA
+      bscale = BSCALE_DATA
+      rscale = RSCALE_DATA
+ 
+      if (coutab(FMCKIN).gt.0) then
+ 
+         ifoffset = VERSION_FSCALE_MC_PACKED
+         iroffset = BRSCALE_MC_PACKED
+ 
+         fscale = FSCALE_MC
+         bscale = BSCALE_MC
+         rscale = RSCALE_MC
+ 
+      endif
+c
+c okay at this point we should be looking at data without the correction
+c start looping through caltru.
+c
+C      if (.not.MonteCarlo) then
+
+         cnt = coutab(CALTRU)
+         do while(cnt.gt.0)
+            
+            call fettab(caltru, id, cnt)
+c
+c is this an FCAL, BCAL or RCAL cell?  Apply the scale factor
+c
+         if (caltru_cellnr.lt.16384) then
+            caltru_e = caltru_e*fscale
+            caltru_imbal = caltru_imbal*fscale
+         elseif (caltru_cellnr.lt.32768) then
+            caltru_e = caltru_e*bscale
+            caltru_imbal = caltru_imbal*bscale
+         else           
+            CALL RCALCOR( CALTRU_CELLNR, RSCALE)
+            caltru_e = caltru_e*rscale
+            caltru_imbal = caltru_imbal*rscale
+         endif            
+
+
+            call reptab(CALTRU)
+            
+ 10         continue
+            
+            cnt = cnt - 1
+            
+         enddo
+
+C      endif  ! not MonteCarlo
+ 
+      return
+      end
+ 
+ 
+C
+C
+C  ----------------------------------------------------- 
+       
+      Subroutine RCALCOR( POSER, FACTOR)
+      
+C  -----------------------------------------------------
+C  Input:  Cell number.
+C  Output: Correction factor.
+C
+C  This routine provides correction factors for
+C  individual RCAL cells.
+C  The factors are obtained in two ways:
+C
+C  1) Kinematic Peak events.
+C     The peak position in data and MC is fitted 
+C     separately. From the difference the correction
+C     factor is calculated.
+C     The 44 inner cells use the KP correction factors.
+C     (precision within 0.5 %)
+C
+C  2) Double Angle method.
+C     The energy of the electron is predicted by the 
+C     da-formula. The difference between measured and 
+C     predicted (corrected for true/predicted) gives
+C     the correction factor.
+C     Cells without KP information use the DA method,
+C     70 cells are corrected.(precision within 1 - 1.5%)
+C
+C Note: Only electrons in the center of the cell were
+C       taken into account. (2 cm in x and 1 cm in y)
+C       The electron energy is corrected for dead
+C       material (72 MeV/mip in PRES,28 MeV/mip in SRTD)
+C       both for data and for Monte Carlo.
+C
+C  If no correction factor for the cell was obtained
+C  (if low statistics in RCAL or if B/FCAL cell), the
+C  following correction factors are given:
+C
+C  RCAL: 1.010    (The mean of the obtained factors !)
+C  BCAL: 1.060    (See CALCOR)
+C  FCAL: 1.000    (See CALCOR)
+C
+C  Author: N. Tuning
+C          6/4/98
+C
+C  Modification: M. Wodarczyk 9-June-98
+C       Modifiy cells with the DA method with improved statistics.
+C       Changed overall RCAL scale to 2.2 as seen from outer RCAL.
+C
+C -----------------------------------------------------
+       
+        IMPLICIT NONE
+       
+        INTEGER I
+        INTEGER POSER
+        REAL    FACTOR
+        REAL    CELL_INFO( 2,  124)
+        INTEGER NCELLS
+        DATA    NCELLS/  124/
+        logical first
+        Save First, cell_info
+        Data First /.True./
+
+
+        REAL dummy1(2,25)
+        DATA dummy1/
+     &      36498 ,   0.9740 ,
+     &      36500 ,   0.9832 ,
+     &      36514 ,   0.9930 ,
+     &      36516 ,   1.0012 ,
+     &      36530 ,   0.9719 ,
+     &      36532 ,   1.0066 ,
+     &      36546 ,   1.0111 ,
+     &      36562 ,   0.9753 ,
+     &      36996 ,   0.9897 ,
+     &      37010 ,   0.9938 ,
+     &      37012 ,   1.0036 ,
+     &      37026 ,   1.0248 ,
+     &      37028 ,   0.9779 ,
+     &      37042 ,   1.0131 ,
+     &      37044 ,   0.9725 ,
+     &      37058 ,   0.9837 ,
+     &      37060 ,   0.9847 ,
+     &      37074 ,   1.0034 ,
+     &      37076 ,   0.9804 ,
+     &      37090 ,   0.9633 ,
+     &      37492 ,   0.9939 ,
+     &      37506 ,   1.0180 ,
+     &      37508 ,   1.0210 ,
+     &      37522 ,   1.0260 ,
+     &      37524 ,   0.9985 /
+
+        REAL dummy2(2,25)
+        DATA dummy2/
+     &      37538 ,   1.0245 ,
+     &      37540 ,   1.00769 ,
+     &      37554 ,   1.02759 ,
+     &      37556 ,   1.0046 ,
+     &      37570 ,   1.04819 ,
+     &      37572 ,   1.0013 ,
+     &      37586 ,   0.9985 ,
+     &      37588 ,   0.9739 ,
+     &      37602 ,   0.9879 ,
+     &      37604 ,   1.0748 ,
+     &      37618 ,   1.0175 ,
+     &      37620 ,   1.0297 ,
+     &      38002 ,   1.0328 ,
+     &      38004 ,   1.0361 ,
+     &      38018 ,   1.0632 ,
+     &      38020 ,   1.0187 ,
+     &      38034 ,   1.0360 ,
+     &      38036 ,   0.9962 ,
+     &      38050 ,   1.0440 ,
+     &      38052 ,   1.02836 ,
+     &      38066 ,   0.99682 ,
+     &      38068 ,   0.9954 ,
+     &      38082 ,   1.00924 ,
+     &      38084 ,   1.0560 ,
+     &      38098 ,   1.03193 /
+
+        REAL dummy3(2,25)
+        DATA dummy3/
+     &      38100 ,   1.01416 ,
+     &      38114 ,   1.0104 ,
+     &      38116 ,   1.0082 ,
+     &      38130 ,   1.0189 ,
+     &      38514 ,   1.0325 ,
+     &      38516 ,   1.0306 ,
+     &      38530 ,   1.0333 ,
+     &      38532 ,   1.0343 ,
+     &      38546 ,   1.03681 ,
+     &      38548 ,   1.02639 ,
+     &      38562 ,   1.01401 ,
+     &      38564 ,   1.01891 ,
+     &      38594 ,   0.999064 ,
+     &      38596 ,   1.04749 ,
+     &      38610 ,   1.0219 ,
+     &      38612 ,   1.04623 ,
+     &      38626 ,   1.0272 ,
+     &      38628 ,   1.0638 ,
+     &      38642 ,   1.0097 ,
+     &      38644 ,   1.0320 ,
+     &      39026 ,   1.0220 ,
+     &      39028 ,   1.0406 ,
+     &      39042 ,   1.0134 ,
+     &      39044 ,   1.0520 ,
+     &      39058 ,   1.13019 /
+
+        REAL dummy4(2,25)
+        DATA dummy4/
+     &      39060 ,   1.02315 ,
+     &      39074 ,   1.03007 ,
+     &      39076 ,   1.04603 ,
+     &      39090 ,   1.03377 ,
+     &      39092 ,   1.01842 ,
+     &      39106 ,   1.02574 ,
+     &      39108 ,   1.04237 ,
+     &      39122 ,   1.0313 ,
+     &      39124 ,   1.03028 ,
+     &      39138 ,   1.0102 ,
+     &      39140 ,   1.0432 ,
+     &      39154 ,   1.0045 ,
+     &      39540 ,   0.9797 ,
+     &      39554 ,   0.9796 ,
+     &      39556 ,   1.0119 ,
+     &      39570 ,   1.0063 ,
+     &      39572 ,   1.01170 ,
+     &      39586 ,   0.99865 ,
+     &      39588 ,   0.97598 ,
+     &      39602 ,   0.9995 ,
+     &      39604 ,   0.980632 ,
+     &      39618 ,   1.00692 ,
+     &      39620 ,   1.0215 ,
+     &      39634 ,   1.0028 ,
+     &      39636 ,   0.9799 /
+
+        REAL dummy5(2,24)
+        DATA dummy5/
+     &      39650 ,   1.0139 ,
+     &      39652 ,   1.0442 ,
+     &      39666 ,   0.9830 ,
+     &      40066 ,   0.9839 ,
+     &      40068 ,   1.0438 ,
+     &      40082 ,   1.0083 ,
+     &      40084 ,   1.0053 ,
+     &      40098 ,   1.0357 ,
+     &      40100 ,   1.0169 ,
+     &      40114 ,   1.0097 ,
+     &      40116 ,   1.0206 ,
+     &      40130 ,   1.0238 ,
+     &      40132 ,   1.0609 ,
+     &      40146 ,   1.0198 ,
+     &      40148 ,   0.9877 ,
+     &      40162 ,   1.0277 ,
+     &      40164 ,   1.0220 ,
+     &      40610 ,   0.9899 ,
+     &      40612 ,   0.9950 ,
+     &      40626 ,   0.9539 ,
+     &      40628 ,   1.0123 ,
+     &      40642 ,   0.9617 ,
+     &      40644 ,   0.9949 ,
+     &      40660 ,   1.0390 /
+
+
+       
+      if (first) then
+         first = .FALSE.
+         DO I = 1, 25
+            CELL_INFO( 1, I+ 0) = dummy1(1,I)
+            CELL_INFO( 2, I+ 0) = dummy1(2,I)
+            CELL_INFO( 1, I+25) = dummy2(1,I)
+            CELL_INFO( 2, I+25) = dummy2(2,I)
+            CELL_INFO( 1, I+50) = dummy3(1,I)
+            CELL_INFO( 2, I+50) = dummy3(2,I)
+            CELL_INFO( 1, I+75) = dummy4(1,I)
+            CELL_INFO( 2, I+75) = dummy4(2,I)
+         ENDDO
+         DO I = 1,  24
+            CELL_INFO( 1, I+100) = dummy5(1,I)
+            CELL_INFO( 2, I+100) = dummy5(2,I)
+         ENDDO
+      endif
+       
+       IF (POSER .LT. 16384) THEN       ! FCAL
+            FACTOR = 1.000
+       ELSEIF (POSER .LT. 32768) THEN   ! BCAL
+            FACTOR = 1.060
+       ELSEIF (POSER .GE. 32768) THEN   ! RCAL
+            FACTOR = 1.022
+            DO I=1, NCELLS
+              IF (POSER .EQ. CELL_INFO(1, I)) THEN
+                 FACTOR = CELL_INFO(2, I)
+              ENDIF
+            ENDDO
+       ELSE
+            FACTOR = 1.000
+       ENDIF
+       
+       
+       RETURN
+       END
+       

@@ -1,0 +1,27 @@
+#!/bin/sh 
+# ZOSTYPE=irix
+ZOSTYPE=suse63-linux
+export ZOSTYPE
+# ZARCH_TYPE=mips3-sgi-irix6.2
+ZARCH_TYPE=i386-suse63-linux
+export ZARCH_TYPE
+# ZOSVERSION=6.2
+ZOSVERSION=2.2.12
+export ZOSVERSION
+ZSYS_ROOT=/afs/desy.de/group/zeus.zsmsm/ZEUSSysSoft
+export ZSYS_ROOT
+ZUTIL_ROOT=/afs/desy.de/group/zeus.zsmsm/Utilities
+export ZUTIL_ROOT
+ZPROJ_ROOT=/afs/desy.de/group/zeus.zsmsm/ZEUSSysSoft/Released
+export ZPROJ_ROOT
+ZSUPP_ROOT=/afs/desy.de/group/zeus.zsmsm/ZEUSSysSoft/Released
+export ZSUPP_ROOT
+ZSOFT_ROOT=/afs/desy.de/group/zeus.zsmsm/ZEUSSysSoft/Released
+export ZSOFT_ROOT
+ZMAKEDIR=/afs/desy.de/group/zeus.zsmsm/ZEUSSysSoft/Make_mgr
+export ZMAKEDIR
+printenv
+tar xf eaze_job.tar
+mkdir gen ; mkdir obj; mkdir exe ; mkdir lib
+cd cmd
+#gmake all

@@ -1,0 +1,103 @@
+      SUBROUTINE CCCXYZ (CellNr, Cx, Cy, Cz, Error)
+      IMPLICIT NONE
+C
+C ************************************************************************
+C
+C PURPOSE:       Calculation of cell centers from offline cell numbers.
+C CALLED FROM:
+C COMMUNICATION:
+C AUTHOR:        Paul de Jong, NIKHEF-H, 20-02-1990.
+C ************************************************************************
+C --DATE--:--NAME--:--MODIFICATIONS---------------------------------------
+C
+C ************************************************************************
+C
+C PdJ 30-01-91:  The CUCELL table now contains the center of gravity for
+C                all cells. In FCAL and RCAL this is equivalent to the
+C                center, in the BCAL this might differ a bit (up to 1 cm).
+C                For the time being CccXyz gives the center of gravity,
+C                but this might change in the future.
+C
+#include "cucell.inc"
+#include "fmckin.inc"
+#include "partap.inc"
+C
+#include "cquick.inc"
+C
+      Integer MopFlag
+      INTEGER CellNr
+      REAL Cx, Cy, Cz,Cx1,Cy1,Cz1
+      INTEGER I, ICNO, IC1, IC2, IPVO, CUR1, CUR2
+      REAL RLOW,RHIGH,GETAL1,GETAL2,GETAL3,XR,YR,XT,YT
+      LOGICAL FIRST, OK, Error, CExist
+      DATA FIRST /.TRUE./
+      Data MopFlag /1/
+      Save FIRST
+      Save MopFlag
+C
+      IF (FIRST) THEN
+         FIRST=.FALSE.
+         ICNO=GETIND(CUCELL,'Nr')
+      ENDIF
+C
+C ..  Does this cell exist?
+C
+      If (.NOT.CExist(CellNr)) Then
+         Error=.TRUE.
+         Cx=0.
+         Cy=0.
+         Cz=0.
+         Return
+      Endif
+C
+C ..  Fetch its coordinates
+C
+c      CellNr = CellNr - Mod(Cellnr,2)
+c      CUCELL_Nr=CellNr
+c      CALL SELTAB(CUCELL,ICNO,IC1,IC2)
+      Cx = CPosit(CellNr,1)
+      Cy = CPosit(CellNr,2)
+      Cz = CPosit(CellNr,3)
+C
+C--CCatterall/FPelucchi 15/07/97
+C--For real data, make adjustments for BCAL/CTD alignment and shower radius
+      If((Cellnr.gt.16384).and.(Cellnr.le.32768).and.(MopFlag.gt.0))then
+C--BCAL
+        Cx1=Cx
+        Cy1=Cy
+        Cz1=Cz
+        Call BCalMoP(Cellnr,Cx1,Cy1,Cz1,Cx,Cy,Cz,MopFlag)
+      EndIf
+c
+c      IF (IC1.NE.IC2) RETURN
+C
+      Error=.FALSE.
+C
+C     Calculate the location of the cell.
+C
+c      IF (CUCELL_Nr.LE.16384) THEN
+C
+C        Fcal
+C
+c         Cx=CUCELL_x
+c         Cy=CUCELL_y
+c         Cz=CUCELL_z
+c      ELSE IF (CUCELL_Nr.GT.32768) THEN
+C
+C        Rcal
+C
+c         Cx=CUCELL_x
+c         Cy=CUCELL_y
+c         Cz=CUCELL_z
+c      ELSE
+C
+C        Bcal
+C
+c         Cx=CUCELL_x
+c         Cy=CUCELL_y
+c         Cz=CUCELL_z
+c      ENDIF
+C
+      RETURN
+      END
+

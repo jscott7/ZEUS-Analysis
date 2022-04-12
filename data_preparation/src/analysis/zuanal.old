@@ -1,0 +1,237 @@
+C     =========================
+      SUBROUTINE ZUANAL (IWANT)
+C     =========================
+C
+C     ----------------------------------------------------------------
+C     Routine Called Every Event from EAZE.
+C     Part of the Initilisation is done here and not in ZUINIT.
+C --------------------------------------------------------------------
+
+      IMPLICIT NONE
+
+#include "partap.inc"
+#include "zrevt.inc"
+#include "o1setu.inc"
+#include "fmckin.inc"
+#include "zdskey.inc"
+c#include "ctrlcm.inc"
+#include "tempcm.inc"
+#include "ezhbook.inc"
+#include "ccgsum.inc"
+#include "common.inc"
+#include "caltru.inc"
+#include "cconsa.inc"
+
+      INTEGER      IERR,IWANT
+      LOGICAL      FIRST
+      DATA         FIRST / .TRUE./
+      real vtx(3)
+      integer i, j
+      logical MC
+
+c For PCCnds
+      real energycuts(10)
+      data energycuts /0.08,0.150,-0.1,-0.2,-0.2,-2.0,-4.0,-8.0,
+     &     -9.0,-10.0/
+      integer nrcond, ierrcond
+
+c For noise96    
+      real ethresh(2),imbacut,nsigma
+      integer noisycells, ierrnoise
+      logical islfl,delfl
+      data ethresh /0.100,0.150/
+      data imbacut /0.7/
+      data nsigma /3.0/
+      data islfl /.false./
+      data delfl /.true./
+
+c VCEAZE stuff 
+      integer jinit, jtrack, jfit, jdedx, jvertex, jerr
+      logical Lfirst
+      data Lfirst  /.true./  
+
+c      if (Lfirst) then
+c
+*     --- VCEAZE setup
+c         jinit   = 0
+c         jtrack  = 0
+c         jfit    = 0
+c         jdedx   = 0
+c         jvertex = 1
+c         Lfirst = .false.
+c      endif
+C
+c      call vceaze(jinit, jtrack, jfit, jdedx, jvertex, jerr)
+      
+      IWANT    = 0              !!! Do not Write-Out Event
+      do i = 1, 3
+         vtx(i) = 0.
+      end do
+C --------------------------
+C --- Init on first call ---
+C --------------------------
+      IF (FIRST) THEN
+
+         WRITE(*,*)
+         WRITE(*,*) ' Basic initialisation'
+         WRITE(*,*)
+
+c ------------------------------------------------
+c CCGEOM, SRGEOM, get year, Check if real data/MC.
+c ------------------------------------------------         
+         CALL BAS_INIT(MC)
+         FIRST = .FALSE.
+      ENDIF
+
+      montecarlo = MC
+c --------------------------------------
+c Now for event by event processing
+c --------------------------------------
+c Reject events not selected by EVTAKE 
+c --------------------------------------
+      if (.not.montecarlo) then
+         call evtake(ierr)
+         if (ierr.eq.0) then
+            write(*,*),'Event rejected by EVTAKE'
+            return
+         end if
+      end if
+
+C --------------------------
+C --- Run & event number ---
+C --------------------------
+      if (coutab(ZREVT).ne.0) then
+         CALL FETTAB (ZREVT,ID,1)
+         RUN_NUM = ZREVT_RunNr
+         EV_NO = ZREVT_EvtNr(3)
+         FLT_NO = ZREVT_EvtNr(1)
+      else
+         write(*,*) 'ZUANAL : ZREVT empty - Abort event'
+         return
+      end if
+
+      CALL CELSWP               !! Correct miscabled BCAL EMC Cells
+
+c ---------------------------------------------
+c Run VCEAZE for secondary vertexing for use by
+c ZufosNT
+c ---------------------------------------------
+      call preptracks(ierr)
+
+c -----------------------
+c Get Trigger Information
+c -----------------------
+c FLT
+c -----------------------
+      call gettrigger(ierr)
+c -----------------------
+c SLT
+c Done in gettrigger!!
+c -----------------------
+c      j = coutab(CCGSum)
+c      if (j.ne.0) then
+c         call fettab(CCGSum,id,1)
+c         SLT_EMPZ = CCGSUM_ETotalHac+CCGSUM_ETotalEmc-
+c     &        CCGSUM_PzHac-CCGSUM_PzEmc
+c      else
+         SLT_EMPZ = 0.
+c      end if
+c -----------------------
+c TLT
+c -----------------------      
+c      call tltbits
+
+      CALL TRKFIL               !! Tracking stuff
+
+c ---------------------------------------------
+c Save CTD only Vertex for later use.
+c ---------------------------------------------
+      if (VCT_XVC.ne.-999.) then
+         vtx(1) = VCT_XVC
+         vtx(2) = VCT_YVC
+         vtx(3) = VCT_ZVC
+      else
+         vtx(1) = 0.
+         vtx(2) = 0.
+         vtx(3) = 0.
+      end if 
+      
+c ----------------------------------------------
+c Get Beam Energies from O4SBOR table or FMCKIN
+c ----------------------------------------------
+      CALL BEAMFIL             
+
+      CALL GETLUMI               !! Lumi Detector Info
+
+      do i = 1, coutab(caltru)
+         Caltru_ID = i
+         call gettab(caltru)
+         caltru_cconsa=INULL
+         call reptab(caltru)
+      end do
+
+c --------------------------------------
+c SRTD reconstruction
+c --------------------------------------
+      call sreaze(0,0,1,ierr)
+      if (ierr.ne.0) write(*,*) 'ERROR IN SREAZE'
+
+c --------------------------------------------------------  
+c Do Calorimeter energy corrections
+c --------------------------------------------------------
+c      call rcalcorr(ierr)       !! Old Routine
+      call rcalcorr6(ierr)      !! RcalCor 6 (Recommended)
+
+c--------------------------------------------------------
+c Now Do Noise Routine
+c --------------------------------------------------------     
+      call pccnds(energycuts,nrcond,ierrcond)
+      if (ierrcond.ne.0) write(*,*)'PCCnds:error'  
+      call NOISE96S(run_num,ethresh,imbacut,nsigma,
+     &     islfl,delfl,noisycells,ierrnoise)
+      if (ierrnoise.ne.0) print*,'error in noise96', ierr
+      call pccnds(energycuts,nrcond,ierrcond)
+
+c --------------------------------------------------------
+c Run Sinistra95 & FINDIS option 1
+c --------------------------------------------------------
+      CALL GETSINISTRA(vtx, year)           
+
+c Reject events where no electron is found.
+      if (CAL_EE.lt.0.) then
+         write(*,*) '**** NO SINISTRA ELECTRON FOUND! ****'
+         return
+      end if
+
+c ------------------------
+c Run ZufosNT
+c ------------------------
+      CALL GETZUFOSNT(vtx)
+
+c ------------------------
+c Run CorandCut
+c ------------------------
+c      CALL GETCANDCUT(vtx, year)
+
+c ------------------------
+c Get Presampler Info.
+c ------------------------
+      CALL GETPRES(vtx)
+
+      CALL GETCAL(vtx)               !! Calorimetry stuff
+
+      if (montecarlo) then		
+         CALL MR2FIL            !! Fill MC true
+      ENDIF
+      
+      CALL HFNT(10)             !! Fill ntuple
+
+      RETURN
+      END
+      
+
+
+
+
+
+

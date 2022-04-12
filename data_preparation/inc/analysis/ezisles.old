@@ -1,0 +1,38 @@
+*-----------------------------------------------------------------*
+*-->    Variables in this common are defined in Isles Routine  <--*
+*-----------------------------------------------------------------*
+
+        Integer    Nr_cMax     , nI_Max     , Nr_cIslMax
+        Parameter( Nr_cMax=600 , nI_Max=200 , Nr_cIslMax=250)
+*
+        Integer        zCells,zPnrl,zID
+        Real           zEl   ,zImbl
+        Common/zIsl01/ zCells,zPnrl(Nr_cMax),
+     +                        zEl(  Nr_cMax),
+     +                        zImbl(Nr_cMax),
+     +                        zID(  Nr_cMax)
+
+        Integer        NrcIsl,IslTyp
+        Real           eIsl,xIsl,yIsl,zIsl,rIsl,emcEIsl,xI1,yI1,zI1
+        Common/zIsl02/ NrcIsl( nI_Max),IslTyp( nI_Max),
+     +                 eIsl(   nI_Max),xIsl(   nI_Max),
+     +                 yIsl(   nI_Max),zIsl(   nI_Max),
+     +                 rIsl(   nI_Max),emcEIsl(nI_Max),
+     +                 xI1(    nI_Max),yI1(    nI_Max),
+     +                 zI1(    nI_Max)
+
+        Integer        pCellIsl
+        Real           ECellIsl,ImbCellIsl
+        Common/zIsl03/ pCellIsl(   Nr_cIslMax,nI_Max),
+     +                 ECellIsl(   Nr_cIslMax,nI_Max),
+     +                 ImbCellIsl( Nr_cIslMax,nI_Max)
+
+        Integer        I_Caltru,zIsl_Cell
+        Common/zIsl04/ I_Caltru(Nr_cMax),zIsl_Cell(Nr_cIslMax,nI_Max)
+
+        Logical        Isles_Debug
+        Common/zIsl05/ Isles_Debug
+
+        Integer        cIslMode
+        DATA           cIslMode /12/
+

@@ -1,0 +1,82 @@
+
+# ZARCH_TYPE = mips-sgi-irix6.2
+# ZEUSRELEASE = old 
+ZARCH_TYPE = mips3-sgi-irix6.2
+ZEUSRELEASE = pro
+# ZEUSRELEASE = old for old mips version
+# ZEUSRELEASE = pro for mips3, temp fix as new vers screwed
+CONDITIONAL_FLAGS =  #
+CONDITIONAL_FLAGS_OFF =  #
+
+
+default::  help
+
+include  $(ZMAKEDIR)/basic.make
+include  $(ZMAKEDIR)/machine_dep.$(ZOSTYPE)
+include  $(ZMAKEDIR)/ZEUS/setup_zeus.make
+
+.PHONY : all
+all : exe
+
+PROGRAM_MAIN = eaze
+PROGRAM_TYPE = eaze
+PROGRAM_NAME = kteucbpc
+
+LIB_SUBINCS := #
+USERINCS    := analysis util bpc
+
+LIB_SUBSRCS := #
+USERSRCS    := analysis programs bpc util
+
+# DEBUGFLAGS = -DDEBUG
+DEBUGFLAGS = #
+
+# EXTRAFLAGS = -DKSHORTNT -DDSUBESSNT
+EXTRAFLAGS = #
+
+FPPFLAGS += $(WINDOWSINCS)
+FPPFLAGS += -I$(VCINCDIR)/vckeep
+FPPFLAGS += $(PHANTOMINCS)
+FPPFLAGS += $(DEBUGFLAGS)
+FPPFLAGS += $(EXTRAFLAGS)
+FPPFLAGS +=  $(PHASE1INCS)
+
+# FPPFLAGS +=  $(ZEUSINCS)
+# FPPFLAGS +=  $(ZGANAINCS)
+# FPPFLAGS += -I${BPRECONDIR}/inc
+# FPPFLAGS +=  -I${CCINCDIR}
+# FPPFLAGS +=  -I${O1INCDIR}
+# FPPFLAGS +=  -I$(ZRINCDIR)/zrcmn
+
+FFLAGS   += -NC260
+
+include  $(ZMAKEDIR)/general_build.make
+include  $(ZMAKEDIR)/eaze_run.make
+
+WINDOWSVERS := 1998a
+
+help:
+	$(MAKE) help_eaze
+
+# include $(ZMAKEDIR)/machines/UNIX/default_rules.unix
+include  $(ZMAKEDIR)/default_rules.$(ZOSTYPE)
+
+.PHONY: syntax
+syntax: checkdirs scheck
+
+MYFILES = $(patsubst %.fpp, $(GENDIR)/%.$(FOR), $(notdir $(USER_SOURCESF)))
+
+.PHONY: scheck
+scheck: $(MYFILES)
+	f77 -pad_source -syntax_only $?
+
+
+
+
+
+
+
+
+
+
+

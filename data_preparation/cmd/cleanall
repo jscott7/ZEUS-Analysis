@@ -1,0 +1,6 @@
+#!/bin/sh
+#
+# Clean Zarah executable
+
+rsh zarah3 'cd /data/clyde/uk/jpscott/flisr/eaze/cmd ; gmake cleanall'
+

@@ -1,0 +1,1117 @@
+*-- Author :    J. Grosse-Knetter   25/09/97
+*
+*     This is CorAndCut, a routine providing corrections to
+*     the reconstruction of the hadronic final state in high-Q^2
+*     events. The full documentation is located in
+*
+*         http://www-zeus.desy.de/~grosse/hqex/newcor/
+*
+*     CAR-FILE VERSION 1.03/00 of 24th April 1998
+*
+C     ==================================================================      
+      SUBROUTINE CORANDCUT(vtx,Necell,ecellnr,year,ITSDAT,Empzcut,Pxcut,
+     +Pycut,Etcut,gammacut,Empzcor,Pxcor,Pycor,Etcor,gammacor,
+     +yjb,Q2jb,xjb,Ierr)
+C     ==================================================================      
+
+      IMPLICIT NONE
+
+#include "caccmn.inc"
+#include "partap.inc"
+#include "caltru.inc"
+#include "zisles2.inc"
+#include "zdskey.inc"
+
+
+      INTEGER I,J,Ierr,Ierr1,Niter,Necell,ecellnr(Necell),year
+      REAL Empzcut,Ptcut,gammacut,Empzcor,Ptcor,gammacor,dcmmax
+      REAL VTX(3),X0,Xzero2,ECORCT,CORECT,theta,phi,epsisl,alpha,dcm
+      REAL Empzc,Pxc,Pyc,gammac,gammamax,dmax,x,y,z,dempz,dpx,dpy,dpt
+      REAL Pxcor,Pycor,Pxcut,Pycut,CORFAC,HACPrCut,EMCPrCut
+      REAL yjb,Q2jb,xjb,Ee,Ep,yres,Q2res,dzet,dxy,drad,dtheta,dphi
+      REAL q2in,dq2in,Etcor,Etcut
+      EXTERNAL Xzero2,ECORCT,CORECT
+      LOGICAL FIRST,Lerr,ITSDAT
+      DATA FIRST/.TRUE./,HACPrCut/0.1/,EMCPrCut/0.3/
+      SAVE FIRST
+      INTEGER Nvtxwarn,Nconislwarn,Ngamwarn,Ncmaxwarn,Neptwarn
+      INTEGER Nrwarn,Newarn,Nnislwarn, Nyrwarn
+      DATA Nvtxwarn/0/, Nconislwarn/0/, Ngamwarn/0/, Ncmaxwarn/0/
+      DATA Neptwarn/0/, Nrwarn/0/, Newarn/0/,Nnislwarn/0/,Nyrwarn/0/
+      SAVE Nvtxwarn,Nconislwarn,Ngamwarn,Ncmaxwarn,Neptwarn,Nrwarn,
+     +     Newarn,Nnislwarn,Nyrwarn
+      PARAMETER(Ee = 27.52, Ep = 820.)
+
+C     set output to zero
+
+      Ierr = 0
+
+      CACNisl = 0
+      Empzcut = 0.
+      Pxcut = 0.
+      Pycut = 0.
+      Etcut = 0.
+      gammacut = 0.
+      Empzcor = 0.
+      Pxcor = 0.
+      Pycor = 0.
+      Etcor = 0.
+      gammacor = 0.
+
+C     first call
+
+      IF(FIRST) THEN
+
+         FIRST = .FALSE.
+
+C     initialize zisles common
+
+         CALL Z_INI_ISLES
+
+C     some boring info
+
+      PRINT '(A)',' ***************************************************'
+      PRINT '(A)',' *             First call to CorAndCut -           *'
+      PRINT '(A)',' *    correcting for back-splash and energy loss   *'
+      PRINT '(A)',' *                                                 *'
+      PRINT '(A)',' *         VERSION 1.03/00 of 24th April 1998      *'
+      PRINT '(A)',' *                                                 *'
+      PRINT '(A)',' * documentation is provided in                    *'
+      PRINT '(A)',' * http://www-zeus.desy.de/~grosse/hqex/newcor/    *'
+      PRINT '(A)',' * or                                              *'
+      PRINT '(A)',' * http://www-pnp.physics.ox.ac.uk/~grosse/newcor/ *'
+      PRINT '(A)',' *                                                 *'
+      PRINT '(A)',' * send comments and suggestions to:               *'
+      PRINT '(A)',' * J.Grosse-Knetter1@physics.oxford.ac.uk          *'
+      PRINT '(A)',' ***************************************************'
+
+      ENDIF
+
+C     check whether year is in a meaningful range
+
+      IF(year.LT.1994.OR.year.GT.1997) THEN
+         year = 1997
+         Ierr = 5
+         Nyrwarn = Nyrwarn + 1
+         IF(Nyrwarn.LE.10) THEN
+            PRINT *,'ERROR in CorAndCut: year out of range.'
+            PRINT *,'Currently X0-map is provided only for 1994-1997.'
+            PRINT *,'1997 will be assumed!'
+            PRINT *,'Back-splash cut is not affected'
+         ENDIF
+         IF(Nyrwarn.EQ.10) THEN
+            PRINT *,'Printed already 10 year-warnings'
+            PRINT *,'won''t print any further'
+         ENDIF
+      ENDIF
+
+C     check vertex
+
+      IF(ABS(VTX(3)).GT.100.) THEN
+         Nvtxwarn = Nvtxwarn + 1
+         IF(Nvtxwarn.LE.10) THEN
+            PRINT '(A,F12.3)','vtx_z outside +-100cm: ',vtx(3)
+            PRINT '(A)','this is strange - please check'
+            IF(Nvtxwarn.EQ.10) THEN
+               PRINT *,'Printed already 10 vertex-warnings'
+               PRINT *,'won''t print any further'
+            ENDIF
+         ENDIF
+         Ierr = 1
+      ENDIF
+
+
+C     fill cell arrays for cone islands and determine gamma_cell
+
+      zCells = 0
+      Empzc = 0.
+      Pxc = 0.
+      Pyc = 0.
+      DO 2000 I=1,COUTAB(Caltru)
+         CALL FETTAB(Caltru,ID,I)
+         DO J=1,Necell
+            IF(ecellnr(J).EQ.Caltru_Cellnr) GOTO 2000
+         ENDDO
+         zCells = zCells + 1
+         IF(zCells.GT.Nr_cMax) THEN
+            zCells = Nr_cMax
+            Ncmaxwarn = Ncmaxwarn + 1
+            Ierr = 2
+            IF(Ncmaxwarn.LE.10) THEN
+               PRINT '(A)','WARNING from CorAndCut: '//
+     +              'ncell > Nr_cMax -> list will be truncated'
+            ENDIF
+            IF(Ncmaxwarn.EQ.10) THEN
+               PRINT *,'Printed already 10 ncell-warnings'
+               PRINT *,'won''t print any further'
+            ENDIF
+         ENDIF
+         zPnrl(zCells) = Caltru_Cellnr
+         zEl(zCells)   = Caltru_E
+         zImbl(zCells) = Caltru_imbal
+         zID(zCells)   = Caltru_ID
+         CALL CCCXYZ(Caltru_Cellnr,x,y,z,Lerr)
+         IF(LErr) THEN
+            PRINT '(A)','FATAL ERROR calling CCCXYZ in CorAndCut!!!'
+            Ierr = -1
+            RETURN
+         ELSE
+            x = x - VTX(1)
+            y = y - VTX(2)
+            z = z - VTX(3)
+            IF(x**2+y**2+z**2.GT.0.0) THEN
+               theta = z/SQRT(x**2+y**2+z**2)
+            ELSE
+               Nrwarn = Nrwarn + 1
+               Ierr = 4
+               IF(Nrwarn.LE.10) THEN
+                  PRINT *,'CorAndCut: strange coordinates; r^2= ',
+     +                 x**2+y**2+z**2
+               ENDIF
+               IF(Nrwarn.EQ.10) THEN
+                  PRINT *,'Printed already 10 coordinate-warnings'
+                  PRINT *,'won''t print any further'
+               ENDIF
+               GOTO 2000
+            ENDIF
+            IF(ABS(theta).GT.1.0005) THEN
+               Nrwarn = Nrwarn + 1
+               Ierr = 4
+               IF(Nrwarn.LE.10) THEN
+                  PRINT *,'CorAndCut: strange coordinates; cos(theta)= '
+     +                 ,theta
+               ENDIF
+               IF(Nrwarn.EQ.10) THEN
+                  PRINT *,'Printed already 10 coordinate-warnings'
+                  PRINT *,'won''t print any further'
+               ENDIF
+               GOTO 2000
+            ELSEIF(ABS(theta).GT.1.0) THEN
+               theta = ACOS(SIGN(1.,theta))
+            ELSE
+               theta = ACOS(theta)
+            ENDIF
+            IF(x**2+y**2.GT.0.0) THEN
+               phi = x/SQRT(x**2+y**2)
+            ELSE
+               Nrwarn = Nrwarn + 1
+               Ierr = 4
+               IF(Nrwarn.LE.10) THEN
+                  PRINT *,'CorAndCut: strange coordinates; r_xy^2= ',
+     +                 x**2+y**2
+               ENDIF
+               IF(Nrwarn.EQ.10) THEN
+                  PRINT *,'Printed already 10 coordinate-warnings'
+                  PRINT *,'won''t print any further'
+               ENDIF
+               GOTO 2000
+            ENDIF
+            IF(ABS(phi).GT.1.0005) THEN
+               Nrwarn = Nrwarn + 1
+               Ierr = 4
+               IF(Nrwarn.LE.10) THEN
+                  PRINT *,'CorAndCut: strange coordinates; cos(phi)= '
+     +                 ,phi
+               ENDIF
+               IF(Nrwarn.EQ.10) THEN
+                  PRINT *,'Printed already 10 coordinate-warnings'
+                  PRINT *,'won''t print any further'
+               ENDIF
+               GOTO 2000
+            ELSEIF(ABS(phi).GT.1.0) THEN
+               phi = SIGN(ACOS(SIGN(1.,phi)),y)
+            ELSE
+               phi = SIGN(ACOS(phi),y)
+            ENDIF
+         ENDIF
+         Empzc = Empzc + Caltru_E*(1.-COS(theta))
+         Pxc = Pxc + Caltru_E*COS(phi)*SIN(theta)
+         Pyc = Pyc + Caltru_E*SIN(phi)*SIN(theta)
+ 2000 CONTINUE
+      IF((Pxc**2+Pyc**2+Empzc**2).GT.0.0) THEN
+         gammac = (Pxc**2+Pyc**2-Empzc**2)/(Pxc**2+Pyc**2+Empzc**2)
+      ELSE
+         Neptwarn = Neptwarn + 1
+         Ierr = -4
+         IF(Neptwarn.LE.10) THEN
+            PRINT *,'CorAndCut: strange E-Pz or Pt^2 value: ',Empzc,
+     +           Pxc**2+Pyc**2
+            IF(Neptwarn.EQ.10) THEN
+               PRINT *,'Printed already 10 E-Pz/Pt^2 warnings'
+               PRINT *,'won''t print any further'
+            ENDIF
+         ENDIF
+         RETURN
+      ENDIF
+      IF(ABS(gammac).GT.1.0) THEN
+         Ngamwarn = Ngamwarn + 1
+         Ierr = -2
+         IF(Ngamwarn.LE.10) THEN
+            PRINT *,'CorAndCut: strange cos(gamma_cell) value: ',gammac
+            IF(Ngamwarn.EQ.10) THEN
+               PRINT *,'Printed already 10 gamma-warnings'
+               PRINT *,'won''t print any further'
+            ENDIF
+         ENDIF
+         RETURN
+      ELSE
+         gammac = ACOS(gammac)
+      ENDIF
+
+C     run cone islands
+
+      call Isles(Vtx, HACPrCut, EMCPrCut, Ierr1)
+      IF(Ierr1.NE.0) THEN
+         Nconislwarn = Nconislwarn + 1
+         IF(Nconislwarn.LE.10) THEN
+            PRINT '(A,I4,A)','CorAndCut: ERROR ',Ierr1,
+     +           ' calling Isles routine!'
+            IF(Nconislwarn.EQ.10) THEN
+               PRINT *,'Printed already 10 Isles-warnings'
+               PRINT *,'won''t print any further'
+            ENDIF
+         ENDIF
+         Ierr = -3
+         RETURN
+      ENDIF
+
+C     check if there are any islands at all...
+
+      IF(Nisl.LE.0) THEN
+         Nnislwarn = Nnislwarn + 1
+         PRINT '(A,I4,A)','no islands found in CorAndCut'
+         IF(Nnislwarn.EQ.10) THEN
+            PRINT *,'Printed already 10 NIsles-warnings'
+            PRINT *,'won''t print any further'
+         ENDIF
+         Ierr = -5
+      ENDIF
+
+C     determine cut parameters - this is start of the loop
+
+      Niter = 0
+
+ 1000 Niter = Niter + 1
+
+      IF(gammac.LT.1.95) THEN
+         gammamax = 0.151+1.372*gammac
+      ELSE
+         gammamax = 0.151+1.372*1.95+0.259*(gammac-1.95)
+      ENDIF
+
+C     reset everything
+
+      Pxcut = 0.
+      Pycut = 0.
+      Etcut = 0.
+      Empzcut = 0.
+      Pxcor = 0.
+      Pycor = 0.
+      Etcor = 0.
+      Empzcor = 0.
+      CACNisl = 0
+      dempz = 0.
+      dpt = 0.
+      dpx = 0.
+      dpy = 0.
+      DO I=1,CaCNisl_Max
+         CUTeIsl(I)  = 0.
+         CUTxIsl(I)  = 0.
+         CUTyIsl(I)  = 0.
+         CUTzIsl(I)  = 0.
+         COReIsl(I)  = 0.
+         CORdeIsl(I) = 0.
+      ENDDO
+
+C     correct and cut on islands
+
+      DO 3000 I=1,Nisl
+C     check island energy
+         IF(eIsl(I).LE.0.0) THEN
+            Ierr = 3
+            Newarn = Newarn + 1
+            IF(Newarn.LE.10) THEN
+               PRINT '(A)','WARNING from CorAndCut: '//
+     +              'Eisl<0 -> excluded from calculation'
+            ENDIF
+            IF(Newarn.EQ.10) THEN
+               PRINT *,'Printed already 10 Eisl-warnings'
+               PRINT *,'won''t print any further'
+            ENDIF
+            GOTO 3000
+         ENDIF
+         epsisl = emcEIsl(I)/eISL(I)
+C     check theta and phi (no vtx correction for X0)
+         IF(xisl(I)**2+yisl(I)**2+zisl(I)**2.GT.0.0) THEN
+            theta = zisl(I)/SQRT(xisl(I)**2+yisl(I)**2+zisl(I)**2)
+         ELSE
+            Nrwarn = Nrwarn + 1
+            Ierr = 4
+            IF(Nrwarn.LE.10) THEN
+               PRINT *,'CorAndCut: strange coordinates; r^2= ',
+     +              xisl(I)**2+yisl(I)**2+zisl(I)**2
+            ENDIF
+            IF(Nrwarn.EQ.10) THEN
+               PRINT *,'Printed already 10 coordinate-warnings'
+               PRINT *,'won''t print any further'
+            ENDIF
+            GOTO 3000
+         ENDIF
+         IF(ABS(theta).LE.1.0) THEN
+            theta = ACOS(theta)
+         ELSEIF(ABS(theta).LT.1.0005) THEN
+            theta = ACOS(SIGN(1.,theta))
+         ELSE
+            Nrwarn = Nrwarn + 1
+            Ierr = 4
+            IF(Nrwarn.LE.10) THEN
+               PRINT *,'CorAndCut: strange coordinates; cos(theta)= ',
+     +              theta
+            ENDIF
+            IF(Nrwarn.EQ.10) THEN
+               PRINT *,'Printed already 10 coordinate-warnings'
+               PRINT *,'won''t print any further'
+            ENDIF
+            GOTO 3000
+         ENDIF
+         IF(xisl(I)**2+yisl(I)**2.GT.0.0) THEN
+            phi = xisl(I)/SQRT(xisl(I)**2+yisl(I)**2)
+         ELSE
+            Nrwarn = Nrwarn + 1
+            Ierr = 4
+            IF(Nrwarn.LE.10) THEN
+               PRINT *,'CorAndCut: strange coordinates; r_xy^2= ',
+     +              xisl(I)**2+yisl(I)**2
+            ENDIF
+            IF(Nrwarn.EQ.10) THEN
+               PRINT *,'Printed already 10 coordinate-warnings'
+               PRINT *,'won''t print any further'
+            ENDIF
+            GOTO 3000
+         ENDIF
+         IF(ABS(phi).LE.1.0) THEN
+            phi = ACOS(phi)
+         ELSEIF(ABS(phi).LT.1.0005) THEN
+            phi = ACOS(SIGN(1.,phi))
+         ELSE
+            Nrwarn = Nrwarn + 1
+            Ierr = 4
+            IF(Nrwarn.LE.10) THEN
+               PRINT *,'CorAndCut: strange coordinates; cos(phi)= ',
+     +              phi
+            ENDIF
+            IF(Nrwarn.EQ.10) THEN
+               PRINT *,'Printed already 10 coordinate-warnings'
+               PRINT *,'won''t print any further'
+            ENDIF
+            GOTO 3000
+         ENDIF
+         IF(yisl(I).LT.0.0) phi = 2.*3.14159 - phi
+C     get dead material and store theta from detector coordinates
+         X0 = Xzero2(vtx(3),theta,phi,year)
+C     get theta and phi (with vtx corr. for momentum
+         IF((xisl(I)-vtx(1))**2+(yisl(I)-vtx(2))**2+
+     +        (zisl(I)-vtx(3))**2.GT.0.0) THEN
+            theta = (zisl(I)-vtx(3))/SQRT((xisl(I)-vtx(1))**2+
+     +           (yisl(I)-vtx(2))**2+(zisl(I)-vtx(3))**2)
+         ELSE
+            Nrwarn = Nrwarn + 1
+            Ierr = 4
+            IF(Nrwarn.LE.10) THEN
+               PRINT *,'CorAndCut: strange coordinates; r^2= ',
+     +              (xisl(I)-vtx(1))**2+(yisl(I)-vtx(2))**2+
+     +              (zisl(I)-vtx(3))**2
+            ENDIF
+            IF(Nrwarn.EQ.10) THEN
+               PRINT *,'Printed already 10 coordinate-warnings'
+               PRINT *,'won''t print any further'
+            ENDIF
+            GOTO 3000
+         ENDIF
+         IF(ABS(theta).LE.1.0) THEN
+            theta = ACOS(theta)
+         ELSEIF(ABS(theta).LT.1.0005) THEN
+            theta = ACOS(SIGN(1.,theta))
+         ELSE
+            Nrwarn = Nrwarn + 1
+            Ierr = 4
+            IF(Nrwarn.LE.10) THEN
+               PRINT *,'CorAndCut: strange coordinates; cos(theta)= ',
+     +              theta
+            ENDIF
+            IF(Nrwarn.EQ.10) THEN
+               PRINT *,'Printed already 10 coordinate-warnings'
+               PRINT *,'won''t print any further'
+            ENDIF
+            GOTO 3000
+         ENDIF
+         IF((xisl(I)-vtx(1))**2+(yisl(I)-vtx(2))**2.GT.0.0) THEN
+            phi = (xisl(I)-vtx(1))/SQRT((xisl(I)-vtx(1))**2+
+     +        (yisl(I)-vtx(2))**2)
+         ELSE
+            Nrwarn = Nrwarn + 1
+            Ierr = 4
+            IF(Nrwarn.LE.10) THEN
+               PRINT *,'CorAndCut: strange coordinates; r_xy^2= ',
+     +              xisl(I)**2+yisl(I)**2
+            ENDIF
+            IF(Nrwarn.EQ.10) THEN
+               PRINT *,'Printed already 10 coordinate-warnings'
+               PRINT *,'won''t print any further'
+            ENDIF
+            GOTO 3000
+         ENDIF
+         IF(ABS(phi).LE.1.0) THEN
+            phi = ACOS(phi)
+         ELSEIF(ABS(phi).LT.1.0005) THEN
+            phi = ACOS(SIGN(1.,phi))
+         ELSE
+            Nrwarn = Nrwarn + 1
+            Ierr = 4
+            IF(Nrwarn.LE.10) THEN
+               PRINT *,'CorAndCut: strange coordinates; cos(phi)= ',
+     +              phi
+            ENDIF
+            IF(Nrwarn.EQ.10) THEN
+               PRINT *,'Printed already 10 coordinate-warnings'
+               PRINT *,'won''t print any further'
+            ENDIF
+            GOTO 3000
+         ENDIF
+         if(zisl(I).gt.215.) THEN         ! FCAL
+            drad = 1.4
+            dzet = 0.5
+            dxy = 1.1
+         elseif(zisl(I).lt.-130.) THEN    ! RCAL
+            drad = 1.7
+            dzet = 0.5
+            dxy = 1.4
+         else                             ! BCAL
+            drad = 0.5
+            dzet = 0.5
+            dxy = 0.7
+         endif
+C     get resolution in theta and phi
+         IF(SIN(theta).NE.0.0) THEN
+            dtheta = SQRT((dzet/SQRT(x**2+y**2+z**2)/ABS(SIN(
+     +           theta)))**2+(z*drad/(x**2+y**2+z**2)/ABS(SIN(
+     +           theta)))**2)
+         ELSE
+            dtheta = 0.
+         ENDIF
+         IF(SIN(phi).NE.0) THEN
+            dphi = SQRT((dzet/SQRT(x**2+y**2)/ABS(SIN(phi)))**2
+     +           +(dxy*x/(x**2+y**2)/ABS(SIN(phi)))**2)
+         ELSE
+            dphi = 0.
+         ENDIF
+C     get E-Pz, Px and Py
+         IF(yisl(I).LT.0.0) phi = 2.*3.14159 - phi
+         IF(Eisl(I).GT.3.0.OR.theta.LT.gammamax) THEN
+            CACNisl = CACNisl + 1
+            CORFAC = CORECT(eisl(I),X0,epsisl,theta,vtx(3),0,itsdat)
+            CUTeIsl(CACNisl) = eisl(I)
+            CUTxIsl(CACNisl) = xIsl(I)
+            CUTyIsl(CACNisl) = yIsl(I)
+            CUTzIsl(CACNisl) = zIsl(I)
+            COReIsl(CACNisl) = eisl(I)*CORFAC
+            CORdeIsl(CACNisl) = COReIsl(CACNisl)*ECORCT(COReIsl(
+     +           CACNisl))
+            Pxcut = Pxcut + CUTeIsl(CACNisl)*SIN(theta)*COS(phi)
+            Pycut = Pycut + CUTeIsl(CACNisl)*SIN(theta)*SIN(phi)
+            Empzcut = Empzcut + CUTeIsl(CACNisl)*(1.-COS(theta))
+            Etcut = Etcut + CUTeIsl(CACNisl)*SIN(theta)
+            Pxcor = Pxcor + COReIsl(CACNisl)*SIN(theta)*COS(phi)
+            Pycor = Pycor + COReIsl(CACNisl)*SIN(theta)*SIN(phi)
+            Empzcor = Empzcor + COReIsl(CACNisl)*(1.-COS(theta))
+            Etcor = Etcor + COReIsl(CACNisl)*SIN(theta)
+            dempz = dempz + (CORdeIsl(CACNisl)*(1.-COS(theta)))**2+
+     +           (COReIsl(CACNisl)*SIN(theta)*dtheta)**2
+            dpx = dpx + (CORdeIsl(CACNisl)*COS(phi)*SIN(theta))**2+
+     +           (COReIsl(CACNisl)*COS(phi)*COS(theta)*
+     +           dtheta)**2+(COReIsl(CACNisl)*SIN(phi)*
+     +           SIN(theta)*dphi)**2
+            dpy = dpy + (CORdeIsl(CACNisl)*SIN(phi)*SIN(theta))**2+
+     +           (COReIsl(CACNisl)*SIN(phi)*COS(theta)*
+     +           dtheta)**2+(COReIsl(CACNisl)*COS(phi)*
+     +           SIN(theta)*dphi)**2
+         ENDIF
+ 3000 CONTINUE
+
+      Ptcor = SQRT(Pxcor**2+Pycor**2)
+      Ptcut = SQRT(Pxcut**2+Pycut**2)
+
+      dempz = SQRT(dempz)
+      dpt = SQRT(pxcor**2*dpx+pycor**2*dpy)/ptcor
+
+      IF(Ptcor**2+Empzcor**2.GT.0.0) THEN
+         gammacor = (Ptcor**2-Empzcor**2)/(Ptcor**2+Empzcor**2)
+      ELSE
+         Neptwarn = Neptwarn + 1
+         Ierr = -4
+         IF(Neptwarn.LE.10) THEN
+            PRINT *,'CorAndCut: strange cor.E-Pz or Pt^2 value: ',
+     +           Empzcor,Ptcor**2
+            IF(Neptwarn.EQ.10) THEN
+               PRINT *,'Printed already 10 E-Pz/Pt^2 warnings'
+               PRINT *,'won''t print any further'
+            ENDIF
+         ENDIF
+         RETURN
+      ENDIF
+      IF(Ptcut**2+Empzcut**2.GT.0.0) THEN
+         gammacut = (Ptcut**2-Empzcut**2)/(Ptcut**2+Empzcut**2)
+      ELSE
+         Neptwarn = Neptwarn + 1
+         Ierr = -4
+         IF(Neptwarn.LE.10) THEN
+            PRINT *,'CorAndCut: strange cut E-Pz or Pt^2 value: ',
+     +           Empzcut,Ptcut**2
+            IF(Neptwarn.EQ.10) THEN
+               PRINT *,'Printed already 10 E-Pz/Pt^2 warnings'
+               PRINT *,'won''t print any further'
+            ENDIF
+         ENDIF
+         RETURN
+      ENDIF
+
+      IF(ABS(gammacor).GT.1.0) THEN
+         Ngamwarn = Ngamwarn + 1
+         Ierr = -2
+         IF(Ngamwarn.LE.10) THEN
+            PRINT *,'strange cos(gamma_cor) value: ',gammac
+            IF(Ngamwarn.EQ.10) THEN
+               PRINT *,'Printed already 10 warnings'
+               PRINT *,'won''t print any further'
+            ENDIF
+         ENDIF
+         RETURN
+      ELSE
+         gammacor = ACOS(gammacor)
+      ENDIF
+      IF(ABS(gammacut).GT.1.0) THEN
+         Ngamwarn = Ngamwarn + 1
+         Ierr = -2
+         IF(Ngamwarn.LE.10) THEN
+            PRINT *,'strange cos(gamma_cut) value: ',gammac
+            IF(Ngamwarn.EQ.10) THEN
+               PRINT *,'Printed already 10 gamma-warnings'
+               PRINT *,'won''t print any further'
+            ENDIF
+         ENDIF
+         RETURN
+      ELSE
+         gammacut = ACOS(gammacut)
+      ENDIF
+
+      IF(ABS(gammacut-gammac)/gammac.GE.0.01.AND.Niter.LE.3) THEN
+         gammac = gammacut
+         GOTO 1000
+      ENDIF
+
+C     regularise yjb and Q2jb
+
+      CALL PROREG(Empzcor,dempz,2.*Ee,yjb,yres)
+      yjb = yjb/2./Ee
+      yres = yres/2./Ee
+
+      IF(yjb.LT.1.0) THEN
+         Q2in = Ptcor**2/(1.-yjb)
+         dQ2in = SQRT((2.*Ptcor*dpt/(1.-yjb))**2+(Ptcor**2*yres/
+     +        (1.-yjb)**2)**2)
+         CALL PROREG(log(Q2in),dQ2in/Q2in,log(4.*Ee*Ep),Q2jb,Q2res)
+         Q2jb = EXP(Q2jb)
+      ELSE
+         Q2jb = 4.*Ee*Ep
+      ENDIF
+
+      IF(yjb.GT.0.0) THEN
+         xjb = Q2jb/(yjb*4.*Ee*Ep)
+      ELSE
+         xjb = 1.
+      ENDIF
+
+      RETURN
+      END
+
+
+      REAL FUNCTION CORECT(E,X0,FEMC,THETA,ZVTX,MODE,ITSDAT)
+
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C     Correction of islands based on high-Q^2 MC samples and an analysis
+C     of Eq for MC and data. It contains:
+C     o correction for loss in inactive material;
+C     o correction for overestimation of energy measurement of hadrons
+C       at small energies (e/h -> e/mip=0.6 and zero-suppression)
+C     o correction for loss in super-cracks
+C
+C     INPUT:
+C     REAL E = energy of island in GeV
+C     REAL X0 = amount of inactive material in radiation lengths
+C     REAL FEMC = fraction of island energy in EMC section
+C     REAL THETA = polar angle of island used for crack-correction
+C     REAL ZVTX = z-position of vertex
+C     INTEGER MODE = selects correction mode
+C       MODE =
+C       0 : all corrections
+C       1 : only inactive material correction
+C       2 : only hadron corrections
+C       3 : only super-crack corrections
+C     LOGICAL ITSDAT = true for data, false for MC (needed for crack corr.)
+C
+C     OUTPUT:
+C     CORECT must be multiplied with the island energy to get the
+C     ``true'' value
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+
+      IMPLICIT NONE
+
+      INTEGER I,MODE
+      REAL X0,E,FEMC,THETA,ZVTX,CORX0,COREOH,CORTHE
+      EXTERNAL COREOH,CORX0,CORTHE
+      LOGICAL ITSDAT
+
+      CORECT = 1.
+
+C     wrong mode selected ?
+
+      IF(MODE.LT.0.OR.MODE.GT.3) THEN
+         PRINT *,'wrong mode selected in CORECT: ',mode
+         PRINT *,'should have been 0, 1, 2 or 3'
+         RETURN
+      ENDIF
+
+C     X0-correction
+
+      IF(MODE.EQ.0.OR.MODE.EQ.1) CORECT = CORECT/CORX0(X0,E)
+
+C     only for hadrons
+C     dE/dx-type overestimation of energy at small energies
+
+      IF(FEMC.LT.0.99.AND.(MODE.EQ.2.OR.MODE.EQ.0)) THEN
+         CORECT = CORECT/COREOH(E*CORECT,FEMC)
+      ENDIF
+
+C     correction for super-cracks
+
+      IF(MODE.EQ.0.OR.MODE.EQ.3)
+     +     CORECT = CORECT/CORTHE(THETA,ZVTX,ITSDAT)
+
+      RETURN
+      END
+
+
+      REAL FUNCTION CORX0(X0,E)
+
+      IMPLICIT NONE
+
+      INTEGER I
+      REAL E,X0,Esafe,Etrue,X0INT,EXP1,EXP2,P1(9)
+      DATA P1/0.08,0.06,0.02,-0.18,-0.087,0.108,0.012,-0.020,0.95/
+
+      CORX0 = 1.
+
+C     protection against too small energy
+
+      Esafe = MAX(E,0.1)
+
+C     protection against REALLY high X0 values
+
+      X0INT = MIN(X0,4.5)
+
+C     loop to approach Etrue by E*correction
+
+      DO I=1,5
+         Etrue = Esafe/CORX0
+
+C     X0-dependence
+
+         EXP1 = (P1(3)+P1(4)*X0INT)*Etrue
+         EXP2 = (P1(7)+P1(8)*X0INT)*Etrue
+         IF(EXP1.LE.-73.) THEN
+            EXP1 = 0.
+         ELSE
+            EXP1 = EXP(EXP1)
+         ENDIF
+         IF(EXP2.LE.-73.) THEN
+            EXP2 = 0.
+         ELSE
+            EXP2 = EXP(EXP2)
+         ENDIF
+         CORX0 = (1.-(P1(1)+P1(2)*X0INT)*EXP1)
+     +        *(1.-(P1(5)+P1(6)*X0INT)*EXP2)*P1(9)
+
+      ENDDO
+
+      RETURN
+      END
+
+
+
+      REAL FUNCTION COREOH(E,FEMC)
+
+      IMPLICIT NONE
+
+      REAL E,FEMC,FRACE,FRACFEMC,EEXT1,EEXT2
+      INTEGER IFEMC1,IFEMC2,IE1,IE2
+
+C       REAL POINTS(10,30)
+C       DATA POINTS/
+C      +  53.38313 ,  3.829774 ,  2.766553 ,  2.382475,   2.336733    ,
+C      +  2.885644 ,  3.026058 ,  7.536466 ,  13.86858,   188.7370    ,
+C      +  12.49855 ,  2.741758 ,  2.293640 ,  1.834276,   2.038097    ,
+C      +  2.469231 ,  2.792308 ,  3.062206 ,  7.458187,   69.56065    ,
+C      +  5.421675 ,  2.400679 ,  1.697095 ,  1.444241,   1.556874    ,
+C      +  1.859720 ,  2.355381 ,  2.633869 ,  4.426112,   28.54038    ,
+C      +  2.613209 ,  1.825628 ,  1.423371 ,  1.196961,   1.268651    ,
+C      +  1.363455 ,  1.621483 ,  2.554364 ,  2.742000,   12.96967    ,
+C      +  2.672216 ,  1.570184 ,  1.250959 ,  1.240250,   1.092422    ,
+C      +  1.069531 ,  1.323452 ,  1.655911 ,  2.561311,   6.558620    ,
+C      +  2.072069 ,  1.350312 ,  1.181535 ,  1.255521,   1.289151    ,
+C      +  1.238914 ,  1.174590 ,  1.306313 ,  1.738039,   2.764859    ,
+C      +  1.472909 ,  1.199450 ,  1.260576 ,  1.300222,   1.242455    ,
+C      +  1.250558 ,  1.121976 ,  1.127530 ,  1.426339,   2.353361    ,
+C      +  1.387966 ,  1.234542 ,  1.368565 ,  1.295088,   1.206465    ,
+C      +  1.156602 ,  1.120512 ,  1.114625 ,  1.311349,   1.874348    ,
+C      +  1.273053 ,  1.338220 ,  1.326974 ,  1.197787,   1.120354    ,
+C      +  1.117659 ,  1.104561 ,  1.067638 ,  1.157748,   1.452335    ,
+C      +  1.249433 ,  1.326841 ,  1.212355 ,  1.134143,   1.071537    ,
+C      +  1.075622 ,  1.072226 ,  1.057204 ,  1.063074,   1.231501    ,
+C      +  1.213500 ,  1.237301 ,  1.125783 ,  1.091143,   1.083483    ,
+C      +  1.060028 ,  1.050874 ,  1.047552 ,  1.027887,   1.126375    ,
+C      +  1.179266 ,  1.154515 ,  1.102112 ,  1.073296,   1.068368    ,
+C      +  1.063305 ,  1.024845 ,  1.016327 ,  1.023621,   1.059736    ,
+C      +  1.146395 ,  1.100181 ,  1.065490 ,  1.055625,   1.045725    ,
+C      +  1.029116 ,  1.008433 , 0.9931475 ,  1.000382,   1.024775    ,
+C      +  1.110306 ,  1.064090 ,  1.050623 ,  1.042461,   1.032420    ,
+C      +  1.013043 ,  1.011453 , 0.9916126 , 0.9800416,   1.006251    ,
+C      +  1.072453 ,  1.045054 ,  1.030215 ,  1.027914,   1.015474    ,
+C      +  1.006687 , 0.9961121 , 0.9742721 , 0.9707466,  0.9884160    ,
+C      +  1.051408 ,  1.028252 ,  1.021572 ,  1.006657,   1.006641    ,
+C      + 0.9970728 ,  1.001391 , 0.9742470 , 0.9727005,  0.9866292    ,
+C      +  1.041734 ,  1.019743 ,  1.022656 ,  1.005054,   1.003665    ,
+C      + 0.9943615 , 0.9909246 , 0.9850691 , 0.9736629,  0.9886762    ,
+C      +  1.037813 ,  1.030812 ,  1.012805 ,  1.014917,   1.003922    ,
+C      + 0.9978988 , 0.9950978 , 0.9922593 , 0.9821507,  0.9843816    ,
+C      +  1.034517 ,  1.019043 ,  1.012871 ,  1.018422,   1.009644    ,
+C      +  1.002859 , 0.9942549 , 0.9989755 , 0.9861876,  0.9877248    ,
+C      +  1.040702 ,  1.024846 ,  1.020655 ,  1.011383,   1.006180    ,
+C      + 0.9969062 , 0.9967958 , 0.9911683 , 0.9897968,  0.9954337    ,
+C      +  1.030627 ,  1.026736 ,  1.010146 ,  1.012575,   1.002272    ,
+C      + 0.9969314 , 0.9933999 , 0.9912161 , 0.9875461,  0.9937155    ,
+C      +  1.036782 ,  1.017074 ,  1.023769 ,  1.001600,   1.002574    ,
+C      + 0.9921755 , 0.9830287 , 0.9783780 , 0.9849940,  0.9977395    ,
+C      +  1.037482 ,  1.018585 ,  1.015182 ,  1.009759,   1.002773    ,
+C      + 0.9942852 , 0.9908427 , 0.9863876 , 0.9976081,   1.007156    ,
+C      +  1.013870 ,  1.014491 ,  1.009544 ,  1.007672,   1.003814    ,
+C      +  1.000096 , 0.9986597 ,  1.003914 ,  1.003236,   1.017491    ,
+C      +  1.078276 ,  1.013104 ,  1.003703 , 0.9985065,   1.002699    ,
+C      + 0.9990242 ,  1.002474 ,  1.004024 ,  1.015420,   1.019185    ,
+C      + 0.9986402 , 0.9957935 , 0.9948815 , 0.9983481,  0.9993846    ,
+C      + 0.9997599 ,  1.001859 ,  1.007659 ,  1.015774,   1.020947    ,
+C      +  1.019204 ,  1.008462 , 0.9916721 , 0.9937676,  0.9894664    ,
+C      + 0.9919083 , 0.9941373 ,  1.007909 ,  1.003077,   1.021114    ,
+C      + 0.9685715 , 0.9705749 , 0.9916741 , 0.9790065,  0.9657285    ,
+C      + 0.9899244 , 0.9884384 , 0.9939221 ,  1.007637,   1.025868    ,
+C      +  1.000000 ,  1.000000 ,  1.000000 , 0.9374595,  0.9374595    ,
+C      + 0.9722703 , 0.9822162 ,  1.000000 ,  1.000000,   1.041892    ,
+C      +  1.000000 ,  1.000000 ,  1.000000 ,  1.000000,   1.000000    ,
+C      +  1.000000 ,  1.000000 ,  1.000000 ,  1.000000,   1.000000/
+
+      REAL POINTS(30,11)
+      DATA POINTS/
+     +     1.537768,  1.248473,  1.054782,  1.156848,  1.136812,
+     +     1.086314,  1.070635, 0.9349974, 0.9046566, 0.9907435,
+     +     0.9841346,  1.034405,  1.030959,  1.036127,  1.002237,
+     +     0.9795514,  1.096123, 0.9674641, 0.8955484,  1.091772,
+     +     1.000000,  1.028049,  1.000000,  1.000000,  1.000000,
+     +     1.000000,  1.000000,  1.000000,  1.000000,  1.000000,
+     +     6.120000,  4.920000,  3.560000,  2.929636,  2.409292,
+     +     2.072069,  1.482641,  1.445077,  1.330409,  1.279124,
+     +     1.241827,  1.193241,  1.137932,  1.087544,  1.057849,
+     +     1.047153,  1.038651,  1.037130,  1.028798,  1.045187,
+     +     1.041680,  1.031762,  1.030720,  1.015640, 0.9630924,
+     +     1.005000, 0.9650838,  1.000000,  1.000000,  1.000000,
+     +     3.360000,  2.749231,  2.494019,  1.971897,  1.518891,
+     +     1.334329,  1.174527,  1.371975,  1.444054,  1.353212,
+     +     1.229367,  1.142377,  1.082573,  1.053369,  1.041716,
+     +     1.028168,  1.029587,  1.034632,  1.022207,  1.025295,
+     +     1.030436,  1.015168,  1.020032,  1.013237, 0.9951509,
+     +     0.9767355, 0.9824023,  1.000000,  1.000000,  1.000000,
+     +     2.672079,  2.382077,  1.712039,  1.475455,  1.286997,
+     +     1.214999,  1.390319,  1.465375,  1.365173,  1.210956,
+     +     1.126753,  1.085624,  1.057488,  1.047095,  1.025778,
+     +     1.015308,  1.005338,  1.003735,  1.020545,  1.010423,
+     +     1.017379,  1.014998,  1.018186,  1.003838,  1.015922,
+     +     1.005000, 0.9477654, 0.9685715,  1.000000,  1.000000,
+     +     2.401502,  1.849809,  1.381975,  1.147517,  1.072370,
+     +     1.453448,  1.423278,  1.347355,  1.222266,  1.119336,
+     +     1.080564,  1.085030,  1.043837,  1.038016,  1.014931,
+     +     1.008976,  1.005478,  1.003135,  1.010534,  1.007999,
+     +     1.009101,  1.007686,  1.004422,  1.010485,  1.012334,
+     +     0.9994481, 0.9867319, 0.9946154,  1.000000,  1.000000,
+     +     2.839901,  2.062794,  1.516814,  1.280030,  1.113924,
+     +     1.308441,  1.388516,  1.229966,  1.139956,  1.090946,
+     +     1.078194,  1.068136,  1.032566,  1.016366,  1.010728,
+     +     0.9941260,  1.001735,  1.005304,  1.000916,  1.009448,
+     +     1.007396,  1.004185,  1.004307, 0.9993132, 0.9986789,
+     +     1.002766, 0.9848763,  1.000000,  1.000000,  1.000000,
+     +     2.931386,  2.462067,  1.797669,  1.338530,  1.178829,
+     +     1.310886,  1.187656,  1.171734,  1.113130,  1.086278,
+     +     1.062799,  1.052126,  1.019954, 0.9953154,  1.005211,
+     +     0.9897625, 0.9828880, 0.9960771,  1.000477,  1.003115,
+     +     1.002536,  1.000117, 0.9985923,  1.002981, 0.9970316,
+     +     1.009270, 0.9962570,  1.000000,  1.000000,  1.000000,
+     +     3.376495,  2.884615,  2.284555,  1.731632,  1.307074,
+     +     1.192326,  1.251681,  1.119193,  1.094183,  1.064882,
+     +     1.038723,  1.025280,  1.000481, 0.9907103, 0.9894750,
+     +     0.9815917, 0.9854535, 0.9903713, 0.9960017, 0.9940284,
+     +     1.002092,  1.004280,  1.004648, 0.9948401,  1.017849,
+     +     0.9943299, 0.9737431,  1.000000,  1.000000,  1.000000,
+     +     3.400000,  2.792308,  2.511308,  2.348731,  1.659592,
+     +     1.366119,  1.159346,  1.107477,  1.038400,  1.059348,
+     +     1.031424,  1.013626, 0.9949380, 0.9837861, 0.9781657,
+     +     0.9730713, 0.9826943, 0.9900661, 0.9916890, 0.9968944,
+     +     1.002809,  1.000026, 0.9997920, 0.9953278,  1.006003,
+     +     0.9975974, 0.9997207,  1.000000,  1.000000,  1.000000,
+     +     4.100000,  3.800000,  3.200000,  2.882727,  2.279715,
+     +     1.786552,  1.387045,  1.335101,  1.154968,  1.045718,
+     +     1.016404,  1.007761, 0.9874878, 0.9713851, 0.9624835,
+     +     0.9735112, 0.9739847, 0.9838059, 0.9945752, 0.9933848,
+     +     1.003043,  1.010032,  1.001907, 0.9980609, 0.9979670,
+     +     1.019132,  1.000000,  1.000000,  1.000000,  1.000000,
+     +     4.300000,  4.200000,  4.000000,  3.600000,  3.300000,
+     +     2.690690,  2.257563,  1.907246,  1.452939,  1.228516,
+     +     1.101501,  1.030393,  1.005634, 0.9849622, 0.9834712,
+     +     0.9830611, 0.9868801, 0.9958891, 0.9991278, 0.9999297,
+     +     1.017373,  1.010843,  1.025702,  1.017251,  1.021946,
+     +     1.019805,  1.000000,  1.000000,  1.000000,  1.000000/
+
+C       IF(FEMC.EQ.0.0.OR.FEMC.EQ.1.0) THEN
+C          COREOH = 1.
+C          RETURN
+C       ENDIF
+C
+C       IF(E.GT.10.0.OR.E.LT.0.06) THEN
+C          COREOH = 1.
+C          RETURN
+C       ENDIF
+C
+C       IE1 = INT((LOG10(E)+1.)/.1333333333-.5)+1
+C       IE2 = IE1 + 1
+C       FRACE = (LOG10(E)+1.)/.1333333333-.5-REAL(IE1)+1.
+C       IFEMC1 = INT((FEMC+.05)*10.)
+C       IFEMC2 = IFEMC1 + 1
+C       FRACFEMC = (FEMC+.05)*10.-REAL(IFEMC1)
+C
+C       IF(IE1.LE.0) IE1 = 1
+C       IF(IE1.GE.30) IE1 = 30
+C       IF(IE2.LE.0) IE2 = 1
+C       IF(IE2.GE.30) IE2 = 30
+C
+C       IF(IFEMC1.LE.0) IFEMC1 = 1
+C       IF(IFEMC1.GE.10) IFEMC1 = 10
+C       IF(IFEMC2.LE.0) IFEMC2 = 1
+C       IF(IFEMC2.GE.10) IFEMC2 = 10
+C
+C       EEXT1 = POINTS(IFEMC1,IE1)*(1.-FRACE)+POINTS(IFEMC1,IE2)*FRACE
+C       EEXT2 = POINTS(IFEMC2,IE1)*(1.-FRACE)+POINTS(IFEMC2,IE2)*FRACE
+
+      IF(FEMC.LT.0.0.OR.FEMC.GE.1.0) THEN
+         COREOH = 1.
+         RETURN
+      ENDIF
+
+      IF(E.GT.10.0.OR.E.LE.0.0) THEN
+         COREOH = 1.
+         RETURN
+      ENDIF
+
+      IE1 = INT((LOG10(E)+1.)/.1333333333-.5)+1
+      IE2 = IE1 + 1
+      FRACE = (LOG10(E)+1.)/.1333333333-.5-REAL(IE1)+1.
+      IFEMC1 = INT((FEMC+.15)*10.)
+      IFEMC2 = IFEMC1 + 1
+      FRACFEMC = (FEMC+.15)*10.-REAL(IFEMC1)
+
+      IF(IE1.LE.0) IE1 = 1
+      IF(IE1.GE.30) IE1 = 30
+      IF(IE2.LE.0) IE2 = 1
+      IF(IE2.GE.30) IE2 = 30
+
+      IF(FEMC.LE.0) THEN
+         IFEMC1 = 1
+         IFEMC2 = 1
+      ENDIF
+      IF(IFEMC2.GE.11) THEN
+         IFEMC1 = 11
+         IFEMC2 = 11
+      ENDIF
+
+      EEXT1 = POINTS(IE1,IFEMC1)*(1.-FRACE)+POINTS(IE2,IFEMC1)*FRACE
+      EEXT2 = POINTS(IE1,IFEMC2)*(1.-FRACE)+POINTS(IE2,IFEMC2)*FRACE
+
+      COREOH = EEXT1*(1.-FRACFEMC)+EEXT2*FRACFEMC
+
+      RETURN
+      END
+
+
+
+      REAL FUNCTION CORTHE(THETA,ZVTX,ITSDAT)
+
+      IMPLICIT NONE
+
+      LOGICAL ITSDAT
+      REAL THETA,ZVTX,PI,COR1,COR2
+      PARAMETER (PI = 3.14159)
+      REAL P1(6),P2(6),Q1(6),Q2(6)
+      DATA P1/0.086, 1.1E-4,0.64,0.0E-3,0.145,-2.5E-4/
+      DATA P2/0.105,-1.1E-4,2.25,0.0E-3,0.137, 2.5E-4/
+      DATA Q1/0.059, 1.6E-4,0.64,0.0E-3,0.122,-10.4E-4/
+      DATA Q2/0.094,-1.6E-4,2.25,0.0E-3,0.150, 10.4E-4/
+
+C     follow geometrical considerations for gamma_0
+
+      P1(3) = ATAN(123./(165.-ZVTX))
+      Q1(3) = ATAN(123./(165.-ZVTX))
+      P2(3) = PI-ATAN(123./(100.+ZVTX))
+      Q2(3) = PI-ATAN(123./(100.+ZVTX))
+
+      IF(ITSDAT) THEN
+         COR1 = (P1(3)+P1(4)*ZVTX-THETA)**2/2./(P1(5)+P1(6)*ZVTX)**2
+         IF(COR1.GT.73.) THEN
+            COR1 = 0.
+         ELSE
+            COR1 = (P1(1)+P1(2)*ZVTX)*EXP(-COR1)
+         ENDIF
+         COR2 = (P2(3)+P2(4)*ZVTX-THETA)**2/2./(P2(5)+P2(6)*ZVTX)**2
+         IF(COR2.GT.73) THEN
+            COR2 = 0.
+         ELSE
+            COR2 = (P2(1)+P2(2)*ZVTX)*EXP(-COR2)
+         ENDIF
+      ELSE
+         COR1 = (Q1(3)+Q1(4)*ZVTX-THETA)**2/2./(Q1(5)+Q1(6)*ZVTX)**2
+         IF(COR1.GT.73.) THEN
+            COR1 = 0.
+         ELSE
+            COR1 = (Q1(1)+Q1(2)*ZVTX)*EXP(-COR1)
+         ENDIF
+         COR2 = (Q2(3)+Q2(4)*ZVTX-THETA)**2/2./(Q2(5)+Q2(6)*ZVTX)**2
+         IF(COR2.GT.73) THEN
+            COR2 = 0.
+         ELSE
+            COR2 = (Q2(1)+Q2(2)*ZVTX)*EXP(-COR2)
+         ENDIF
+      ENDIF
+
+      CORTHE = 1. - COR1 - COR2
+
+      RETURN
+      END
+
+
+
+      REAL FUNCTION ECORCT(ECOR)
+
+      IMPLICIT NONE
+
+      REAL ECOR,P(4)
+      DATA P/.238,.185,-1.070,.489/
+
+      ECORCT = 0.
+      IF(ECOR.LE.0.0) RETURN
+      ECORCT = P(1)+P(2)*TANH(P(3)*LOG10(ECOR)+P(4))
+
+      RETURN
+      END
+
+
+
+C-----------------------------------------------------------------
+      SUBROUTINE PROREG(INVAL,INRES,INLIM,OUTVAL,OUTRES)
+C-----------------------------------------------------------------
+
+      IMPLICIT NONE
+
+      INTEGER I
+      REAL INVAL,INRES,INLIM,OUTVAL,OUTRES
+      DOUBLE PRECISION X,START,SIG,DERF,X1,X2,LIMIT,Y1,Y2,YN,XN,DXN
+      EXTERNAL DERF
+
+      OUTRES = 1.
+      OUTVAL = 0.
+
+      X = DBLE(INVAL)
+      SIG = DBLE(INRES)
+      LIMIT = DBLE(INLIM)
+
+      START = .5D0*(DERF((LIMIT-X)/DSQRT(2.D0)/SIG)+DERF(-X/DSQRT(2.D0)/
+     +     SIG))
+      YN = 1.D5
+
+      I = 0
+      X1 = 0.D0
+      X2 = LIMIT
+      DO WHILE(DABS(YN-START).GT.1.D-9)
+
+         I = I+1
+
+         Y1 = DERF((X1-X)/DSQRT(2.D0)/SIG)
+         Y2 = DERF((X2-X)/DSQRT(2.D0)/SIG)
+
+         XN = (X2+X1)/2.D0
+         YN = DERF((XN-X)/DSQRT(2.D0)/SIG)
+         IF(YN-START.GT.0.0D0) THEN
+            X2 = XN
+         ELSE
+            X1 = XN
+         ENDIF
+
+         IF(I.GT.100) THEN
+            OUTVAL = 0.
+            PRINT *,'iteration limit exceeded!!!'
+            RETURN
+         ENDIF
+
+      ENDDO
+
+      OUTVAL = SNGL(XN)
+
+      START = .67D0*DERF((LIMIT-X)/DSQRT(2.D0)/SIG)+0.33D0*
+     +     DERF((Xn-X)/DSQRT(2.D0)/SIG)
+      YN = 1.D9
+
+      I = 0
+      X1 = XN
+      X2 = LIMIT
+      DO WHILE(DABS(YN-START).GT.1.D-9)
+
+         I = I+1
+
+         Y1 = DERF((X1-X)/DSQRT(2.D0)/SIG)
+         Y2 = DERF((X2-X)/DSQRT(2.D0)/SIG)
+
+         DXN = (X2+X1)/2.D0
+         YN = DERF((DXN-X)/DSQRT(2.D0)/SIG)
+         IF(YN-START.GT.0.0D0) THEN
+            X2 = DXN
+         ELSE
+            X1 = DXN
+         ENDIF
+
+         IF(I.GT.100) THEN
+            OUTRES = 1.
+            PRINT *,'iteration limit exceeded!!!'
+            RETURN
+         ENDIF
+
+      ENDDO
+
+      OUTRES = SNGL(DXN-XN)
+
+      RETURN
+      END

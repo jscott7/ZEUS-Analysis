@@ -1,0 +1,6 @@
+#!/bin/sh
+#
+# Make Zarah executable
+
+rsh zarah3 'cd /data/clyde/uk/jpscott/f2isr/eaze/cmd ; gmake all \
+            ZEUSRELEASE=1998a.4'

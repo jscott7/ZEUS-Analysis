@@ -1,0 +1,12 @@
+#!/bin/sh
+#
+# Submission for MC cards to ZARAH
+
+jobsub fl_96mc -q $2 -h zarah$1 -f \
+fl_96mc ../exe/mips3-sgi-irix6.2/jps_ntuple.exe \
+../cards/fl_96mc_$3.cards \
+deadm45.dat dead0.dat dead0_94.dat dead0_95.dat dead0_96.dat \
+deadp45.dat deadp45_94.dat deadp45_95.dat deadp45_96.dat fecel.dat \
+fh0cel.dat fh1cel.dat fh2cel.dat recel.dat rh0cel.dat rh1cel.dat \
+becel.dat bh1cel.dat bh2cel.dat deadm45_94.dat deadm45_95.dat \
+deadm45_96.dat rvtx96.dat rvtx97.dat

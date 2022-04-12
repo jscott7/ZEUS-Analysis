@@ -1,0 +1,7 @@
+      REAL         PI,TWOPI,TPIBY2,PIBY2
+     &           , NOUSE
+      PARAMETER  (PI     = 3.14159265359)
+      PARAMETER  (PIBY2  = PI/2.)
+      PARAMETER  (TWOPI  = 2*PI)
+      PARAMETER  (TPIBY2 = 3*PIBY2)
+      PARAMETER  (NOUSE  = -9999.9)

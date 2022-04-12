@@ -1,0 +1,127 @@
+c -----------------------------------------------
+      subroutine getzufosnt(vtx)
+c -----------------------------------------------
+c ZufosNT
+c 25/11/99 Write out Zufos input parameters for
+c debugging purposes
+C -------------------------------------------- --    
+      implicit none
+
+#include "common.inc"
+#include "ZufosNT.inc"
+#include "zisles.inc"
+
+      integer l, m
+      logical zfirst
+      data zfirst /.true./
+      real vtx(3)
+      real CALPOS(3), cal_energy
+
+      if (zfirst) then
+         zfirst = .false.
+c        write(500,*) 'Run #, evt #'
+c	write(500,*) 'vtx1, vtx2, vtx3, NrEcells'
+c        write(500,*) 'cal_xp, cal_yp, cal_zp'
+c        write(500,*) 'eprob, cal_energy'
+c	write(500,*) 'CellList'
+c        write(500,*) '-----------------------------'
+
+c        write(501,*) 'Run #, evt #'
+c        write(501,*) 'Caltru info'
+c        write(501,*) '-----------'
+c        write(501,*) '# of cells considered (zCells)'
+c        write(501,*) 'Poser # for 1st 5 cells (zPnrl)'
+c        write(501,*) 'Energy of 1st 5 cells (zEl)'
+c        write(501,*) 'Island info'
+c        write(501,*) '-----------'
+c	write(501,*) '# of islands (nIsl)'
+c        write(501,*) '# of cells in 1st 5 islands (NrcIsl)'
+c        write(501,*) 'Energy of 1st 5 islands (eIsl)'
+c        write(501,*) '-----------------------------'
+c      end if
+         write(501,*) 'Run #, evt #'
+         write(501,*) '-----------'
+         write(501,*) 'px, py, pz, E'
+         write(501,*) 'pxcal 11,12,21,22,31,32'
+         write(501,*) 'pycal 11,12,21,22,31,32'
+         write(501,*) 'pzcal 11,12,21,22,31,32'
+         write(501,*) 'ecal 11,12,21,22,31,32'
+         write(501,*) 'pxtrk, pytrk, pztrk, etrk'
+         write(501,*) 'pxbsp 1,2,3'
+         write(501,*) 'pybsp 1,2,3'
+         write(501,*) 'pzbsp 1,2,3'
+         write(501,*) 'ebsp 1,2,3'
+         write(501,*) 'eminpznt, ptnt, gammant'
+
+      end if
+
+      
+      CALPOS(1)  = CAL_XP
+      CALPOS(2)  = CAL_YP
+      CALPOS(3)  = CAL_ZP
+      cal_energy = cal_ee
+
+c      write(500,*) run_num, ev_no
+c      write(500,*) vtx(1), vtx(2), vtx(3), NrEcells
+c      write(500,*) calpos(1), calpos(2), calpos(3)   
+c      write(500,*) eprob,cal_energy
+c      write(500,*) '------------ CellList ------------'
+c      write(500,*) CellList
+c      write(500,*) '----------------------------------'
+     
+      call ZufosNT(vtx, NrEcells, CellList, CALPOS, EPROB,
+     &     cal_energy)
+       
+c      write(501,*) run_num, ev_no
+c      write(501,*) zCells
+c      write(501,*) ZPnrl(1),ZPnrl(2),ZPnrl(3),ZPnrl(4),ZPnrl(5)
+c      write(501,*) zEl(1),zEl(2),zEl(3),zEl(4),zEl(5)
+c      write(501,*) '---------------Islands-----------------'
+c      write(501,*) nIsl
+c      write(501,*) NrcIsl(1),NrcIsl(2),NrcIsl(3),NrcIsl(4),NrcIsl(5)
+c      write(501,*) eIsl(1),eIsl(2),eIsl(3),eIsl(4),eIsl(5)
+c      write(501,*) '----------------------------------'
+
+      do l = 1, 3
+         do m = 1, 2
+            ZPxCal(l, m) = PxCal(l, m)
+            ZPyCal(l, m) = PyCal(l, m)
+            ZPzCal(l, m) = PzCal(l, m)
+            ZECal(l, m) = Ecal(l, m)
+         end do
+      end do
+
+         write(501,*) run_num, ev_no
+c         write(501,*) '-----------'
+c         write(501,*) px, py, pz, E
+c         write(501,*) pxcal(1,1),pxcal(1,2),pxcal(2,1),
+c     &        pxcal(2,2),pxcal(3,1),pxcal(3,2)
+c         write(501,*) pycal(1,1),pycal(1,2),pycal(2,1),
+c     &        pycal(2,2),pycal(3,1),pycal(3,2)
+c         write(501,*) pzcal(1,1),pzcal(1,2),pzcal(2,1),
+c     &        pzcal(2,2),pzcal(3,1),pzcal(3,2)
+c         write(501,*) pxcal(1,1),pxcal(1,2),pxcal(2,1),
+c     &        ecal(2,2),ecal(3,1),ecal(3,2)
+  
+c         write(501,*) pxtrk, pytrk, pztrk, etrk
+c         write(501,*) pxbsp(1),pxbsp(2),pxbsp(3)
+c         write(501,*) pybsp(1),pybsp(2),pybsp(3)
+c         write(501,*) pzbsp(1),pzbsp(2),pzbsp(3)
+c         write(501,*) ebsp(1),ebsp(2),ebsp(3)
+         write(501,*) eminpznt, ptnt, gammant
+         write(501,*) '---------------------------'
+
+      ZEminPz = EminPzNT
+      Zgamma = GammaNT
+      ZPt = PtNT
+      ZPxBSp = PxBSp(2)
+      ZPyBSp = PyBSp(2)
+      ZPzBSp = PzBSp(2)
+      ZEBSp  = EBSp(2)
+      ZufoE = E
+      ZufoPx = Px
+      ZufoPy = Py
+      ZufoPz = Pz
+      write(501,*) ZEminPz, Zgamma
+      return
+      end

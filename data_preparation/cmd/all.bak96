@@ -1,0 +1,13 @@
+#!/bin/sh -f
+#
+# Submit all 97 background ISR events
+#
+sub.bak96 2 M 1
+sub.bak96 3 M 2
+
+sub.bak96 2 L 3
+sub.bak96 3 L 4
+sub.bak96 2 L 5
+
+sub.bak96 2 L 6
+

@@ -1,0 +1,41 @@
+#!/bin/sh -f
+#
+# Submit all 97 MC ISR events
+#
+#sub.mc97 1 L 1
+#sub.mc97 1 L 2
+#sub.mc97 1 L 3
+#sub.mc97 1 L 4
+#sub.mc97 2 L 5
+#sub.mc97 2 L 6
+#sub.mc97 2 L 7
+#sub.mc97 1 M 11
+#sub.mc97 1 M 12
+#sub.mc97 1 M 13
+#sub.mc97 1 M 14
+#sub.mc97 2 M 15
+#sub.mc97 2 M 16
+#sub.mc97 2 M 17
+#sub.mc97 3 M 18
+#sub.mc97 3 M 19
+sub.mc97 1 M 20
+sub.mc97 1 M 21
+sub.mc97 1 M 22
+sub.mc97 1 M 23
+sub.mc97 1 M 24
+sub.mc97 1 M 241
+sub.mc97 1 M 242
+sub.mc97 1 L 25
+sub.mc97 1 L 251
+sub.mc97 1 L 26
+sub.mc97 1 L 27
+sub.mc97 1 L 28
+sub.mc97 1 L 29
+sub.mc97 1 L 30
+sub.mc97 1 L 31
+sub.mc97 1 L 32
+sub.mc97 1 L 33
+sub.mc97 1 L 40
+sub.mc97 1 L 41
+sub.mc97 1 L 42
+sub.mc97 1 L 43

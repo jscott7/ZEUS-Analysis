@@ -1,0 +1,433 @@
+
+      SUBROUTINE NOISE97S(RUN,ECUT,IMBACUT,NSIGMA,
+     &                    ISLFL,DELFL,NCELLS,IERR)
+C
+C---------------------------------------------------------------------
+C
+C Input parameters :
+C
+C INPUT :
+C          RUN     : RUN NUMBER  (input RUN<1000 for MC)
+C          ECUT(1) : ENERGY THRESHOLD FOR EMC CELLS IN GEV (DEFAULT: 0.08)
+C          ECUT(2) : ENERGY THRESHOLD FOR HAC CELLS IN GEV (DEFAULT: 0.14)
+C
+C          IMBACUT : Cut of relative imbalance (absolute value)
+C                    Imbacut < 0 : choose default value    (DEFAULT: 0.7)
+C                    for isolated cells with E < 0.7 GEV
+C                    -----------------------------------
+C                    If you don't dare to apply an imbalance cut choose
+C                    a high value, i.e. Imbacut = 2.
+C
+C          NSIGMA  : Number of standard deviation from the mean
+C                    value of noise (only apply to noisy cells
+C                    which cannot be corrected by using the cell's
+C                    imbalance information).
+C
+C          ISLFL   : ISLAND FLAG
+C          DELFL   : DELETE FLAG
+C
+C OUTPUT : NCELLS : NUMBER OF NOISE CELLS 'TOUCHED' BY THIS ROUTINE
+C
+C          IERR  :       0 : NORMAL
+C                       -1 : ERROR (CalTru_CellNr not exist)
+C                       -2 : ERROR (relation CalTru_CConSa not ok)
+C                        1 : CALTRU TABLE EMPTY
+C
+C
+C ISLFL : FALSE  :  CELLS WITH A COMMON BORDER ARE CONSIDERED TO BE ADJACENT
+C                  (CONDENSATE ALGORITHM)
+C                   THIS IS RECOMMENDED FOR DIS
+C         TRUE   : CELLS WITH A COMMON EDGE ARE CONSIDERED TO BE ADJACENT TOO
+C                  (ISLAND ALGORITHM)
+C                  THIS MIGHT BE USEFUL FOR PEOPLE WORKING WITH ISLANDS, BUT
+C                  IS LESS RESTRICTIVE
+C DELFL : TRUE   : NOISE CELLS ARE REMOVED FROM CALTRU
+C         FALSE  : NOISE CELLS ARE NOT REMOVED FROM CALTRU BUT STORED IN THE
+C                  COMMON /NOISECM95/
+C
+C COMMON /NOISECM95/ : POINTER TO NOISE CELLS   : NOISEID(I) I=1,NCELLS
+C
+C**********************************************************************
+C  NB:  before using condensates/ cluster they have to be refilled
+C        using, e.g. the s/r PCCNDS,PCSLCT and PCIDCO/PCIDCL
+C                 ( --> description in PHANTOM documentation )
+C**********************************************************************
+C
+C-----------------------------------------------------------------------------
+C
+C AUTHOR : Reinhold Seifert  (VXDESY::SEIFERT) ----> for Noise94
+C DATE   : Sep 22, 1995
+C
+C-----------------------------------------------------------------------------
+C --DATE--:--NAME--:--MODIFICATIONS-------------------------------------------
+C OCT '96    Ming     adapt for '95
+C
+c     The file 'noscell95.list', which will be read by this code,
+c     contains the list of identified noisy cells, some information
+c     about its noise distribution, and the method of treating these
+c     noisy cells. These information will be read into the array
+c     'cellinfo'.
+c
+c     cellinfo(1,i) -> cell id
+c     cellinfo(2,i) -> run range start \  run range in which the
+c     cellinfo(3,i) -> run range end   /  cell is noisy.
+c     cellinfo(4,i) -> noise max energy
+c     cellinfo(5,i) -> noise mean
+c     cellinfo(6,i) -> noise width
+c     cellinfo(7,i) -> noise code ... 1 2 3 4
+c
+c     *** NOTE *** The treatments for the identified noisy cells should
+c                  only be done on the DATA and NOT MC events (since most
+c                  of the identified noisy cells were only noisy for part
+c                  of the runs taken in 1995). In order to distinguish between
+c                  data and MC, the user can simply input a run number that
+c                  is less than 1000 (run<1000).
+c
+c                  This code should only be valid for '95 analysis since
+c                  the noisy cells vary in different years.
+C-----------------------------------------------------------------------------
+C --DATE--:--NAME--:--MODIFICATIONS-------------------------------------------
+C May '97    Savin     adapt for '96
+C----------------------------------------------------------------------------
+
+      IMPLICIT NONE
+
+#include "partap.inc"
+#include "caltru.inc"
+#include "cconsa.inc"
+
+      INTEGER RUN
+
+      REAL    ECUT(2)
+      REAL    DECUT(2)
+      DATA    DECUT /0.080, 0.140/
+
+      REAL      IMBACUT
+      REAL     DIMBACUT
+      DATA     DIMBACUT /0.7/
+
+
+C     LIMIT THE IMBALANCE CUT ON CELLS .LT. ELIMCUT
+      REAL     ELIMCUT
+      DATA     ELIMCUT /1.000/
+
+      INTEGER  NCELLS,IERR
+      LOGICAL  ISLFL, DELFL
+
+      REAL     CALCUT(3)
+      DATA     CALCUT /0.060, 0.100, 0.110/
+
+C     cut in noise width
+      INTEGER  NSIGMA
+
+      INTEGER    MAXCELL
+      PARAMETER (MAXCELL=5918)
+      REAL       ENERGY(MAXCELL), IMBALA(MAXCELL)
+      INTEGER    CELLNR(MAXCELL)
+      LOGICAL    CORREC(MAXCELL)
+
+      INTEGER   NCELLMAX,     NISLANDMAX
+      PARAMETER (NCELLMAX=600, NISLANDMAX=200)
+      INTEGER   NISLAND, CELNUM, ERRIS, ISLAND(NCELLMAX),
+     &          POSERNR(NCELLMAX), NUM_CELLS(NISLANDMAX)
+      REAL      E_CELL(NCELLMAX)
+      LOGICAL   CHECK
+
+      INTEGER    EMC,   HAC,   HAC0,   HAC12
+      PARAMETER (EMC=1, HAC=2, HAC0=2, HAC12=3)
+
+      REAL     ECSECT, CENE, CIMB
+      INTEGER  NUM, SEC
+      INTEGER  I, J, Ncc
+
+      LOGICAL  ok, FLAG, COR
+      LOGICAL  ISOLA
+
+      LOGICAL  FIRST
+      DATA     FIRST /.TRUE./
+
+      real    cellinfo(7,3000)
+      integer numcell,chkflg
+      real    rddata(7)
+
+      integer maximumid
+      parameter (maximumid=1000)
+      integer noiseid(maximumid)
+      common/noisecm96/noiseid
+
+c .............................................................................
+      IF( IMBACUT.LT.0. ) IMBACUT=DIMBACUT
+      if( ECUT(1).LT.0. ) ECUT(1)=DECUT(1)
+      if( ECUT(2).LT.0. ) ECUT(2)=DECUT(2)
+
+
+      IF (FIRST) THEN
+
+        FIRST=.FALSE.
+        WRITE(*,'(A40)')      '  ********************************** '
+        WRITE(*,'(A40)')      '  NOISE95 suppression V1.0           '
+        WRITE(*,'(A30,F6.3)') '  ENERGYCUT EMC            ', ECUT(1)
+        WRITE(*,'(A30,F6.3)') '  ENERGYCUT HAC            ', ECUT(2)
+        WRITE(*,'(A30,F6.3)') '  IMBALANCE CUT            ', IMBACUT
+        WRITE(*,'(A30,F6.3)') '  ENERGY LIMIT FOR IMBACUT ', ELIMCUT
+        WRITE(*,'(A30,L5)')   '  ISLAND FLAG              ', ISLFL
+        WRITE(*,'(A30,L5)')   '  DELETE FLAG              ', DELFL
+        WRITE(*,'(A40)')      '  ********************************** '
+
+        numcell = 0
+        do i=1,7
+          do j=1,3000
+            cellinfo(i,j) = 0.
+          enddo
+        enddo
+        write(6,*)'ch#   run-begin  run-end  Emax  <E>  width  code'
+C------  A.Savin
+        if(run.gt.10000 .and. run.lt.20000)then
+        open(15,file=
+C     &'/zow/userc/savin/WWW/noscell95.list',status='old')
+     &'noscell95.list',status='old')
+        goto 10
+        endif
+        if(run.gt.20000 .and. run.lt.25000)then
+        open(15,file=
+C     &'/zow/userc/savin/WWW/noscell96.list',status='old')
+     &'noscell96.list',status='old')
+        goto 10
+        endif
+        if(run.gt.25000 .and. run.lt.30000)then
+        open(15,file=
+C     &'/zow/userc/savin/WWW/noscell97.list',status='old')
+     &'noscell97.list',status='old')
+        goto 10
+        endif
+        write(6,*) 'Run_nr ',run,' CANNOT OPEN NOSCELL FILE !'
+        goto 30
+C------
+10      read(15,*,end=20) (rddata(i),i=1,7)
+        numcell = numcell + 1
+        do i=1,7
+          cellinfo(i,numcell) = rddata(i)
+        enddo
+        write(6,*)(cellinfo(i,numcell),i=1,7)
+        goto 10
+20      close(15)
+30      continue
+
+
+      ENDIF
+
+
+      IF (COUTAB(CALTRU).EQ.0) THEN
+        IERR = 1
+        RETURN
+      ENDIF
+
+      IERR   = 0
+      NCELLS = 0
+      CALL VZERO(NUM_CELLS,NISLANDMAX)
+      CALL VZERO(NOISEID,MAXIMUMID)
+
+      IF (ISLFL) THEN
+
+        IF (COUTAB(CALTRU).GT.NCELLMAX) THEN
+          WRITE(*,'(A50)')
+     +      ' WARNING: TOO MANY CELLS FOR THE ISLAND ALGORITHM'
+          WRITE(*,'(A12,I3,A16)')
+     +      ' ONLY FIRST ', NCELLMAX, ' CELLS ACCEPTED '
+        ENDIF
+
+        CELNUM = MIN(COUTAB(CALTRU),NCELLMAX)
+        DO I = 1, CELNUM
+          CALL FETTAB(CALTRU,ID,I)
+          POSERNR(I) = CALTRU_CELLNR
+          E_CELL(I)  = CALTRU_E
+        ENDDO
+
+        CALL ISLANDS(NISLAND,ISLAND,POSERNR,E_CELL,CELNUM,ERRIS)
+        IF (ERRIS.GT.0) PRINT*, 'WARNING: ERROR IN SUBROUTINE ISLANDS'
+
+        DO I = 1, CELNUM
+          NUM_CELLS(ISLAND(I)) = NUM_CELLS(ISLAND(I)) + 1
+        ENDDO
+
+      ENDIF
+
+
+
+      DO  I = COUTAB(CALTRU), 1, -1
+
+        CALL FETTAB(CALTRU,ID,I)
+
+        CHECK = .TRUE.
+        IF (ISLFL) THEN
+          DO J = 1, NISLAND
+            IF (NUM_CELLS(J).GT.1) THEN
+              IF (ISLAND(I).EQ.J)  CHECK =.FALSE.
+            ENDIF
+          ENDDO
+        ENDIF
+
+        ISOLA=.FALSE.
+        IF( (CALTRU_CCONSA.EQ.INULL).OR.(CALTRU_CCONSA.EQ.IANY) )THEN
+           ISOLA=.TRUE.
+        ELSE
+           call natrel(caltru,caltru_cconsa,cconsa,ok)
+           if( ok )then
+            Ncc=cconsa_Ncemc+cconsa_NcHac1+cconsa_NcHac2
+            if( Ncc.eq.1 ) ISOLA=.TRUE.
+           else
+            print*,' NOISE95M: error: not ok realtion caltru_cconsa'
+            IERR=-2
+            RETURN
+           endif
+        ENDIF
+
+C
+C is this an isolated cell?
+C
+        ISOLA = ISOLA.AND.CHECK
+
+C
+C determine the energy cuts to be used
+C
+        NUM = ISHFT(IAND(CALTRU_CELLNR,15),-1)
+        IF     ((NUM.GT.0).AND.(NUM.LE.4)) THEN
+          SEC = EMC
+        ELSE IF (NUM.LE.5) THEN
+          SEC = HAC0
+        ELSE IF (NUM.LE.7) THEN
+          SEC = HAC12
+        ELSE
+          IERR = -1
+          RETURN
+        ENDIF
+C       if not isolated cell -- apply standard CalTru cuts
+C                               ( only used for bad PMT list )
+        IF( .not.ISOLA )THEN
+          ECSECT = CALCUT(SEC)
+        ELSE
+          IF( SEC.EQ.HAC0 .OR. SEC.EQ.HAC12 ) SEC = HAC
+          ECSECT = ECUT(SEC)
+        ENDIF
+
+
+c
+c check if this cell is a known "noisy" cell
+c
+        FLAG = .FALSE.
+        chkflg = 0
+        if (run.gt.1000) then                 ! this is DATA (not MC)
+          do j=1,numcell
+            if ((caltru_cellnr.eq.cellinfo(1,j)).and.
+     &          (run.ge.cellinfo(2,j)).and.
+     &          (run.le.cellinfo(3,j))) then
+              if (cellinfo(7,j).eq.2) then      ! cut at n sigma
+                chkflg = 2
+                if (caltru_e.lt.
+     &              (cellinfo(5,j)+nsigma*cellinfo(6,j))) then
+                  cene = 0.
+                  FLAG = .TRUE.
+                else
+                cene = caltru_e
+                endif
+                goto 150
+              endif
+C ---------- A.Savin
+C              if (cellinfo(7,j).eq.3) then      ! imb correction
+              if (cellinfo(7,j).eq.3 .and.
+     & caltru_e.le.cellinfo(4,j) ) then      ! imb correction
+C     & caltru_e.le.2 ) then      ! imb correction
+                chkflg = 3
+                if (caltru_imbal.gt.0) then
+                  cene = caltru_e - caltru_imbal
+                  FLAG = .TRUE.
+                elseif (caltru_imbal.lt.0) then
+                  cene = caltru_e + caltru_imbal
+                  FLAG = .TRUE.
+                else
+                  cene = caltru_e
+                endif
+                goto 150
+              endif
+              if (cellinfo(7,j).eq.4) then      ! cut at Emax
+                chkflg = 4
+                if (caltru_e.lt.cellinfo(4,j)) then
+                  cene = 0.
+                  FLAG = .TRUE.
+                else
+                  cene = caltru_e
+                endif
+                goto 150
+              endif
+            endif
+          enddo
+        endif
+150     continue
+
+C
+C       go ahead for isolated cells
+C
+        COR = .FALSE.
+        IF( ISOLA )THEN
+
+C
+C IMBALANCE CUT
+C
+C         PROTECT AGAINST ZERO
+
+C------ A.Savin ------
+CC          CIMB = 2.
+CC          IF( CALTRU_E.NE.0. ) CIMB = ABS(CALTRU_IMBAL/CALTRU_E)
+CC          IF( CIMB.GT.IMBACUT .AND. CALTRU_E.LT.ELIMCUT )THEN
+CC
+          CIMB = 0.
+          IF( CALTRU_E.NE.0. ) CIMB = ABS(CALTRU_IMBAL)
+          IF(CIMB.GT.0.49*CALTRU_E+0.03 .and.
+     &  CALTRU_E.LT.ELIMCUT ) then
+           COR=.TRUE.
+          ENDIF
+C---------------------
+C
+C
+C ENERGY CUT
+C
+          IF( CALTRU_E.LT.ECSECT )THEN
+           COR=.TRUE.
+          ENDIF
+        ENDIF
+
+C
+C SOMETHING TO CORRECT?
+
+        IF( FLAG )THEN
+          IF( CENE.LT.ECSECT )THEN
+            COR = .TRUE.
+          ELSE
+           CALTRU_E     = CENE
+           if (chkflg.eq.3) then
+             CALTRU_IMBAL = 0.
+           endif
+           CALL REPTAB(CALTRU)
+          ENDIF
+        ENDIF
+
+        IF( COR )THEN
+          IF( DELFL ) CALL DELTAB(CALTRU)
+        ENDIF
+
+        IF( FLAG .OR. COR )THEN
+C         SAMPLE THE 'TOUCHED' CELLS
+          NCELLS = NCELLS + 1
+          IF (NCELLS.LE.MAXIMUMID) THEN
+             NOISEID(NCELLS) = CALTRU_ID
+          ELSE
+             WRITE(*,'(A28)') ' TOO MANY NOISE CELLS FOUND '
+          ENDIF
+        ENDIF
+
+
+      ENDDO
+
+
+      END
+

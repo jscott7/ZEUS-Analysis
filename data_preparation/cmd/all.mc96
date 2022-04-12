@@ -1,0 +1,19 @@
+#!/bin/sh -f
+#
+# Submit all 96 MC ISR events
+#
+sub.mc96 2 M 1054
+sub.mc96 3 M 1055
+sub.mc96 1 M 1056
+sub.mc96 2 M 1057
+sub.mc96 1 M 1053
+sub.mc96 3 M 1058
+sub.mc96 1 L 1059
+sub.mc96 2 L 1060
+sub.mc96 3 L 1061
+sub.mc96 1 L 1062
+sub.mc96 2 L 1063
+sub.mc96 1 L 1064
+
+
+

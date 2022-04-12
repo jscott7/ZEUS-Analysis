@@ -1,0 +1,102 @@
+C...    kinmatical variables
+
+        Integer         eC,eN
+        Real                  eE,ePr,eEcor,eX,eY,eZ,eth,eph
+        common /ucwnt1/ eC,eN,eE,ePr,eEcor,eX,eY,eZ,eth,eph
+
+        Real            Q2el , Xel , Yel , W2el
+        Common /ukvel/  Q2el , Xel , Yel , W2el
+
+        Real            EmPzCal, EpPzCal
+        Common /uempz1/ EmPzCal, EpPzCal
+
+        Integer         isQED
+        Real            gE,gX,gY,gZ
+        common/myisrej/ isQED,gE,gX,gY,gZ
+       
+        REAL            EFcal   , xFcal   , yFcal   , zFcal   ,
+     &                  EBcal   , xBcal   , yBcal   , zBcal   ,
+     &                  ERcal   , xRcal   , yRcal   , zRcal   ,
+     &                  EFcalBP , xFcalBP , yFcalBP , zFcalBP ,  
+     &                  ETcal   , NrcT
+
+        COMMON /CALene/ EFcal   , xFcal   , yFcal   , zFcal   ,
+     &                  EBcal   , xBcal   , yBcal   , zBcal   ,
+     &                  ERcal   , xRcal   , yRcal   , zRcal   ,
+     &                  EFcalBP , xFcalBP , yFcalBP , zFcalBP ,  
+     &                  ETcal   , NrcT
+
+        Real            EFcalH  , xFcalH  , yFcalH  , zFcalH  ,
+     &                  EBcalH  , xBcalH  , yBcalH  , zBcalH  ,
+     &                  ERcalH  , xRcalH  , yRcalH  , zRcalH  , 
+     &                  ETcalH 
+
+        COMMON /HADene1/EFcalH  , xFcalH  , yFcalH  , zFcalH  ,
+     &                  EBcalH  , xBcalH  , yBcalH  , zBcalH  ,
+     &                  ERcalH  , xRcalH  , yRcalH  , zRcalH  , 
+     &                  ETcalH
+
+        REAL            EtaMax,EtaMin,EtaMaxI,EtaMinI,EtaMaxTr,EtaMinTr
+        common /ucwnt3/ EtaMax,EtaMin,EtaMaxI,EtaMinI,EtaMaxTr,EtaMinTr
+
+        Real            eEtru,Q2tru,Xtru,Ytru,W2tru
+        Real            eEapp,Q2app,Xapp,Yapp,W2app
+        Real            gmtru      
+        Common /uetrue/ eEtru,Q2tru,Xtru,Ytru,W2tru,
+     &                  eEapp,Q2app,Xapp,Yapp,W2app,
+     &                  gmtru
+
+        Real            ethtru,ephtru,eGi,eGf
+        common /ucwnt5/ ethtru,ephtru,eGi,eGf
+    
+        Real            eh1,xh1,yh1,zh1,eh2,xh2,yh2,zh2
+        Common /uhflw1/ eh1,xh1,yh1,zh1,eh2,xh2,yh2,zh2
+
+        Real            eh3,xh3,yh3,zh3,eh4,xh4,yh4,zh4
+        common /uhflw2/ eh3,xh3,yh3,zh3,eh4,xh4,yh4,zh4
+
+        Integer         zufos_Max
+        Parameter      (zufos_Max=150)
+        Integer         Nzufos
+        Real                   zufo
+        Common /uzufos/ Nzufos,zufo(4,zufos_Max)
+
+        Integer         Ntufos,tufo
+        Common /utufos/ Ntufos,tufo(4,zufos_Max)
+
+        Integer         EvtA
+        common /uEvtA/  EvtA
+
+        Integer         I_MAX
+        Parameter      (I_MAX=150)
+        Integer         hnI
+        Real            hcI,heI,etaIsl,emcIsl,hxI,hyI,hzI,hrI,hthI,hphI
+        Real            hthI1,hphI1
+        Integer         ITRm,ITrw
+        Real            ItoTRsep,ItoTRprob
+        common /uhIsl1/ hnI,ITrm(I_MAX),
+     &                  hcI(I_MAX),heI(I_MAX),etaIsl(I_MAX),
+     &                  emcIsl(I_MAX),hxI(I_MAX),hyI(I_MAX),
+     &                  hzI(I_MAX),hrI(I_MAX),
+     &                  hthI(I_MAX),hphI(I_MAX),
+     &                  hthI1(I_MAX),hphI1(I_MAX),
+     &                  ItoTRsep(10,I_MAX),ItoTRprob(10,I_MAX),
+     &                  ITrw(10,I_MAX)
+
+        INTEGER   nT_Max
+        Parameter(nT_Max=75)
+        Integer         nT , qTr, swmTr, qltTr, mTrI, wTrI
+        REAL            pTr, dpTr, thTr, phTr
+        common  /uTr1/  nT , qTr(nT_Max),swmTr(nT_Max),qltTr(nT_Max),
+     &                         mTrI(nT_Max),pTr(nT_Max),dpTr(nT_Max),
+     &                     thTr(nT_Max),phTr(nT_Max),wTrI(10,nT_Max)
+
+        Integer         eTrmat, eTrnear
+        Real            eTrp  , eTrdp, eTrth, eTrph, eTrsep, eTrpr
+        Common /uTr2/   eTrmat, eTrnear, eTrp  , eTrdp, 
+     &                  eTrth , eTrph  , eTrsep, eTrpr
+
+
+        Integer              vctID(nT_Max)
+        COMMON /uTr1_more/   vctID
+

@@ -1,0 +1,105 @@
+C
+C ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+C                F2/ISR EVENTS
+C ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+C                                                                            
+C {Total number of events to process} Default = unlimitted
+C ZRLIMIT-NEVT    1000
+C {Time limit}                        Default = 20 sec
+c ZRLIMIT-TLFT 99.
+C
+C -------------> Adi's ISR event directories
+cZEUSIO-INFI /data/grub/uk/jpscott/fldata97/evdir97e_16.rz
+C
+C -------------> Driver is IE and ZED for event directory files
+cZeusIO-IOPT DRIVER=IE,ZED
+C
+ZeusIO-INFI ZeusEventStore
+ZeusIO-IOPT DRIVER=OBJY
+c
+ZeusIO-FirstRun 26819
+ZeusIO-LastRun 26940
+ZeusIO-Variable ((ELumig>4)and(Eeu_si>4))
+C turn off history storage mechanism
+C
+ZEUSIO-NOUPDHMM 
+c ---------------------------------------------------------------------
+C 
+C ***** ZEUS MAGNETIC FIELD CARDS
+c
+c   New magnetic field maps were introduced in Jan. 1992.
+c   These maps are substantially more detailed than the old 2-D "Frascati"
+c   map that has been used so far.
+c   Preliminary documentation (by Silvia Limentani) can be found in:
+c           VXDESY::ZRDOCU:GUFLDNEW.DOC 
+c
+c   Two new cards, MAP and MSCALE, have been introduced to access/process
+c   the new maps.
+c   See ZG313T4 Pam file, P=COMMENT,D=COMCARD and COMMAPS.  
+c
+c        MAP  2 0  reads the _SCA version.
+c        MAP  2 1  reads the _SCB version.
+c        MAP  . . 0     : not used at the moment
+c        MAP  . . . >0  : produces detailed print-out at initialisation.
+c             . . .  .
+ZEUSBFLD-MAP  2 0 0  0
+c
+c          MSCALE allows the possibility of scaling each of the 11 sub-maps.
+c                 The scaling factor is integerised with 1000 -> 1.0
+c                 The default value is 1000 (i.e. 1.0) for each MAP.
+c                 The regions covered by the 11 maps are:
+c     Map 1  covers the volume inside the yoke with relatively coarse
+c            granularity; it is the default. 
+c     Map 2  covers the compensator region;
+c     Map 3  covers the central tracking detectors, solenoid
+c            and immediate surroundings;
+c     Map 4  covers the toroid region;
+c     Map 5  covers the forward endcap of the yoke;
+c     Map 6  covers the rear endcap of the yoke;
+c                                                         ^
+c     Map 7      \                                        |y
+c         8      |                                       _7__
+c         9       > - they cover the barrel yoke,      8/    \8
+c        10      |    according to the schema:        9|      |9  -x->
+c        11      /                                    10\____/10
+c                                                         11
+c  It follows that the 11 scale-factors are not all independent:
+c       1 and 3 MUST be the same scale-factors,
+c  and  5 through 11 should probably be the same, but there may be 
+c                    some non-linearities. (This is all being checked.)
+c  NOTE !!
+c  use D911018I5000_SC*.MAPS only to run ZEPHYR on old MOZART.DATA, which
+c  were generated with D911018I5000_SC*.MAPS !!!!! 
+c  An APPROXIMATION for 1.5T, starting from D911018I5000_SC*.MAPS is given by:
+c  
+c                 Central     comp.  toroid    Yokes
+C ZEUSBFLD-MSCALE 1=833 3=833   2=833  4=833    5=7*833
+c
+c  An APPROXIMATION for 1.5T, starting from S3955C889Y3000_SC*.MAPS is given by:
+C                                    
+c                    Central     comp.  toroid    Yokes
+c ZEUSBFLD-MSCALE 1=1049 3=1049  2=833  4=1000   5=7*1000 
+c
+c  For 'DAY 1' use S3955C889Y3000_SC*.MAPS which corresponds to 1.43T and:
+c
+c                  Central     comp.  toroid    Yokes
+ZEUSBFLD-MSCALE 1=1000 3=1000  2=792  4=1000   5=7*1000 
+c
+c One cannot yet turn all fields OFF by the MSCALE card, though this will
+c be made possible. At the moment one turns fields off by the ZG3xxTn-EXCO 
+c card:
+c             >0: Field OFF 
+c ZG3xxTn-EXCO 1
+c ---------------------------------------------------------------------
+C
+STOP
+
+
+
+
+
+
+
+
+
+
