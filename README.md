@@ -1,15 +1,25 @@
-# ZEUS-Analysis
+# Introduction
 Code from Year 2000 Physics analysis for the ZEUS Particle Physics Detector
 [See the wiki for more detailed information](https://github.com/jscott7/ZEUS-Analysis/wiki)
 
-## Prerequisties
-CERNLIB needs to be installed
+# Prerequisites
+CERNLIB needs to be installed. On a 32bit Unbuntu based Linux Distro it is sufficient to install from the Software Manager. 
+This has been tested on Linux Mint 19.3 Cinnamon
 
-## Build
+# Components
+## data_preparation
+This code loads reconstructed events from the ZEUS datastore and selects a coarse population. 
+Output is a set of ntuples. 
+If can also be run over generated MonteCarlo datasets. 
+
+## fl_code
+This code runs over the ntuples generates by the data_preparation step. 
+
+### Build
  * make clean
  * make analysis
 
-## Run
+### Run
 * analysis.exe : Executable
 
 _Other files_
@@ -42,7 +52,7 @@ Output
 * fort.506 : ytilts (97) 
 * fort.507 : yspreads (97)
 
-## Interpret Results
+### Interpret Results
 
 This is done using PAW. Open PAW and Enter:
 
