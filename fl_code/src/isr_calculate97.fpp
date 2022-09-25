@@ -11,44 +11,44 @@ c ----------------------------------
       real totcalen, bottom
       real temp
       real s
-	real xcorr
-	real def_ee, def_ep, eg_cal
-	real electron_pz
-	real pt2
-	integer i, j
-	real epzlocal
+      real xcorr
+      real def_ee, def_ep, eg_cal
+      real electron_pz
+      real pt2
+      integer i, j
+      real epzlocal
 
-	def_ee = 0.
-	eg_cal = 0.
-	def_ee = 27.52
-	def_ep = 820.0
-	z = 0.
-	Q2_el = 0.
-	y_el = 0.
-	y_elcorr = 0.
-	zy_jb = 0.
-	zy_jbcorr = 0.
-	y_sig = 0.
-	electron_pz = 0.
-	q2corr = 0.
-	deltaisr = 0.
-	empzcal = 0.
-	electron_pz = 0.
+      def_ee = 0.
+      eg_cal = 0.
+      def_ee = 27.52
+      def_ep = 820.0
+      z = 0.
+      Q2_el = 0.
+      y_el = 0.
+      y_elcorr = 0.
+      zy_jb = 0.
+      zy_jbcorr = 0.
+      y_sig = 0.
+      electron_pz = 0.
+      q2corr = 0.
+      deltaisr = 0.
+      empzcal = 0.
+      electron_pz = 0.
 
 c ---------------------------------
 c Zufos e-pz hadronic
 c ---------------------------------
- 	if (bkspuse.eq.1) then
+      if (bkspuse.eq.1) then
          zempzhad = ZEminPz
-	else
-	   zempzhad = (ZufoE*hadscale)-ZufoPz
-	end if
+      else
+         zempzhad = (ZufoE*hadscale)-ZufoPz
+      end if
 
 c ---------------------------------
 c Calculate Cal e-pz
 c ---------------------------------
-	electron_pz = electron_en * cos(electron_th)
-	empzcal = zempzhad + electron_en - electron_pz  
+      electron_pz = electron_en * cos(electron_th)
+      empzcal = zempzhad + electron_en - electron_pz  
 
 c ---------------------------------
 c Calculate total e-pz
@@ -86,20 +86,20 @@ c Correct y_el for ISR (z correction factor)
 c -----------------------------------------
       z = (def_ee-(elumig)) / def_ee
  
-	ysigz = y_sig * z
+      ysigz = y_sig * z
 
 c ---------------------------------
 c y_el corr = (y_el + z -1) / z
 c ---------------------------------
       if (z.ne.0.) then
-      y_elcorr = (y_el + z - 1.) / z
+         y_elcorr = (y_el + z - 1.) / z
       end if      
 
 c ---------------------------------
 c y_jb corr = y_jb / z
 c ---------------------------------
       if (z.ne.0.) then
-      zy_jbcorr = zy_jb / z
+         zy_jbcorr = zy_jb / z
       end if
   
 c ---------------------------------
@@ -120,16 +120,16 @@ c ---------------------------------
 c --------------------------------
 c Correct x for ISR
 c --------------------------------
-	if ((y_el+z-1.).gt.0.0) then
-	   xcorr = (z * x_el * y_el) / (z + y_el - 1)
-	end if
+      if ((y_el+z-1.).gt.0.0) then
+         xcorr = (z * x_el * y_el) / (z + y_el - 1)
+      end if
 
 c --------------------------------
 c Calculate delta_isr
 c --------------------------------
-	eg_cal = def_ee*(y_el - y_sig)
-	if (elumig.ne.0.) then
-	deltaisr = (elumig-eg_cal)/(elumig)
+      eg_cal = def_ee*(y_el - y_sig)
+      if (elumig.ne.0.) then
+         deltaisr = (elumig-eg_cal)/(elumig)
       end if
 
 c --------------------------------
@@ -138,22 +138,22 @@ c I believe Z gamma includes backsplash....
 c --------------------------------
       gamma = Zgamma
 
-	pt2 = (zufopx**2)+(zufopy**2)
-	epzlocal = zufoE-ZufoPz
-	if ((pt2+epzlocal**2).ne.0) then
-	gamma2=ACOS((pt2-epzlocal**2)/(pt2+epzlocal**2))
-	end if
-	gamma = gamma * 180./pi
-	gamma2 = gamma2 * 180./pi
+      pt2 = (zufopx**2)+(zufopy**2)
+      epzlocal = zufoE-ZufoPz
+      if ((pt2+epzlocal**2).ne.0) then
+      gamma2=ACOS((pt2-epzlocal**2)/(pt2+epzlocal**2))
+      end if
+      gamma = gamma * 180./pi
+      gamma2 = gamma2 * 180./pi
 
 c --------------------------------
 c Logarithmic quantities
 c --------------------------------
-	if (ysigz.gt.0.0) then
-	   ysig_x_z = log10(ysigz)
-	else
-	   ysig_x_z = -99.
-	end if
+      if (ysigz.gt.0.0) then
+         ysig_x_z = log10(ysigz)
+      else
+         ysig_x_z = -99.
+      end if
 
       if (y_elcorr.gt.0.0) then
          logyelcorr = log10(y_elcorr)
