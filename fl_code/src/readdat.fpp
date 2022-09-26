@@ -11,7 +11,7 @@ c ----------------------------------
  
       NR_INFILES = 0
       DO I=1,50
-	   WRITE(*,*) 'ENTER INPUT NTUPLE NAME : ',I
+         WRITE(*,*) 'ENTER INPUT NTUPLE NAME : ',I
          READ(CHOICE,90,ERR=95)  FILEN(I)
          IF (LENOCC(FILEN(I)).LT.5) GOTO 95
          NR_INFILES = NR_INFILES + 1
