@@ -338,23 +338,23 @@ c     &	 (etamaxcut.eq.1) .and.
       end if
 
 c ------------------------------------------
-      tltcut = 0
+      tltcut = .false.
       if (histofill.eq.1) then
          if ((run_num.ge.25190).and.(run_num.le.25336)) then 
-            tltcut = 1
+            tltcut = .true.
          else if((run_num.ge.27666).and.(run_num.le.27770)) then 
-            tltcut = 1
+            tltcut = .true.
          else if (iand(tlt(4),65536).eq.65536) then
-            tltcut = 1
+            tltcut = .true.
          else if (iand(tlt(4),262144).eq.262144) then
             if ((bestx**2+besty**2).gt.27**2) then
-               tltcut = 1
+               tltcut = .true.
             end if
          end if
 
          else if (histofill.eq.3) then
          if (iand(tlt(4),65536).eq.65536) then
-            tltcut = 1             
+            tltcut = .true.             
          end if
       end if
 
