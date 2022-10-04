@@ -1,0 +1,119 @@
+macro limit
+***********
+
+opt ndat
+*null 0. 24. 0. 1.
+set pass 10
+set cshi 0.008
+set yhti 6
+graphics/view/size 20 15
+
+fort/file 66 limit1.ps
+meta 66 -4121
+
+fun/plot 1-(8/(2*(27.5-x))*2.) 0. 20. 
+fun/plot 1-(5/(2*(27.5-x))*2.) 0. 22.5 s
+fun/plot 1-(10/(2*(27.5-x))*2.) 0. 22.5 s
+text 12.5 -0.15 'Photon energy (GeV)' 0.4 0 
+text -1.8 0.8 'y' 0.4 0
+set ltyp 4
+line 1. 0.2 3.5 0.2
+set ltyp 1
+line 1. 0.15 3.5 0.15
+set ltyp 3
+line 1. 0.1 3.5 0.1
+text 4. 0.2 'E?e! = 5 GeV' 0.3 0.
+text 4. 0.15 'E?e! = 8 GeV' 0.3 0.
+text 4. 0.1 'E?e! = 10 GeV' 0.3 0.
+
+close 66
+
+fort/file 66 limit2.ps
+meta 66 -4121
+
+vec/del x
+vec/del y
+vec/cre x(15) R 6. 8. 10. 12. 13.1 14. 16. 16.74 16. 14. 12. 10. 8. 6. 6.
+vec/cre y(15) R 0.294 0.324 0.361 0.408 0.439 0.407 0.304 0.256 0.239 0.204 0.177 0.157 0.141 0.128  0.294
+
+set faci 7
+set fais 1
+fun/plot 1-(8/(2*(27.5-x))*2.) 0. 20. 
+farea 15 x y
+fun/plot 1-(5/(2*(27.5-x))*2.) 0. 22.5 s
+fun/plot 1-(10/(2*(27.5-x))*2.) 0. 22.5 s
+
+fun/plot 0.1/((27.5-x)/27.5) 0. 23. s
+fun/plot 0.23/((27.5-x)/27.5) 0. 23. s
+
+text 12.5 -0.14 'Photon energy (GeV)' 0.4 0 
+text -1.5 0.8 'y' 0.4 0
+set ltyp 12
+line 6. 0.131 6. 0.294
+text 6.2 0.19 'Photon energy cut' 0.3 0.
+text 0.5 0.3 'Upper y?HERA! limit' 0.3 0.
+text 0.5 0.07 'Lower y?HERA! limit' 0.3 0.
+close 66 
+return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

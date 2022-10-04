@@ -1,0 +1,120 @@
+macro mccontrol
+*************
+
+opt ndat
+set tsiz 0.
+set gsiz 2.
+set ygti 0
+set yhti 5
+set vsiz 1.5
+set xwin 0
+set ygti 1
+set xmgr 0.
+set xmgl 0.
+set ymgu 4
+set ymgl 4
+*set hcol 2
+*set htyp 144
+set mtyp 20
+set mscf 3
+set Xlab 1
+*set xsiz 30
+*set ysiz 30
+set pass 10
+set cshi .01
+vec/del m1
+vec/del m2
+vec/del m3
+vec/create m1(1) R 20
+vec/create m2(1) R 1300
+vec/create m3(1) R 1200
+
+graphics/view/size 40 40
+*hi/file 1 data.hbook
+*hi/file 22 mc.hbook
+hi/file 1 israll.hbook
+
+fort/file 66 nomplots2.ps
+meta 66 -4221
+
+*opt logy
+opt liny
+
+*******************************
+*x 
+*******************************
+hi/op/add 312 313 1032
+hi/op/add 1032 314 1033
+hi/pl 1033
+hi/pl 312 sh
+hi/pl 314 sh
+*cd //lun1
+hi/pl 112 se
+
+**********************
+* Y_jb
+*********************
+hi/op/add 315 316 1001
+hi/op/add 1001 317 1002
+hi/pl 1002
+hi/pl 315 sh
+hi/pl 317 sh
+hi/pl 115 se
+
+**********************
+* Y_el
+***********************
+hi/op/add 345 346 1003
+hi/op/add 1003 347 1004
+hi/pl 1004
+hi/pl 345 sh
+hi/pl 347 sh
+hi/pl 138 se
+
+**********************
+* Eprob
+*********************
+hi/op/add 348 349 1005
+hi/op/add 1005 370 1006
+hi/pl 1006(0.96:1.)
+hi/pl 348 sh
+hi/pl 370 sh
+hi/pl 139 se
+
+**********************
+* e-pz
+*********************
+hi/op/add 342 343 1007
+hi/op/add 1007 344 1008
+hi/pl 1008(35.:70.)
+hi/pl 342 sh
+hi/pl 344 sh
+hi/pl 137 se
+
+**********************
+* zufoe
+*********************
+hi/op/add 374 375 1009
+hi/op/add 1009 376 1010
+hi/pl 1010
+hi/pl 374 sh
+hi/pl 376 sh
+hi/pl 141 se
+
+**********************
+* HAC energy
+*********************
+hi/op/add 371 372 1011
+hi/op/add 1011 373 1012
+hi/pl 1012(0.:0.75)
+hi/pl 371 sh
+hi/pl 373 sh
+hi/pl 140 se
+
+close 66
+close 1
+*close 22
+
+return
+
+

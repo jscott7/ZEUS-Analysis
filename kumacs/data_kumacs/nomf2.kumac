@@ -1,0 +1,194 @@
+macro mccontrol
+*************
+
+opt ndat
+set tsiz 0.
+set gsiz 2.
+set ygti 0
+set yhti 5
+set vsiz 1.5
+set xwin 0
+set ygti 1
+set xmgr 0.
+set xmgl 0.
+set ymgu 4
+set ymgl 4
+*set hcol 2
+*set htyp 144
+set mtyp 20
+set mscf 3
+set Xlab 1
+*set xsiz 30
+*set ysiz 30
+set pass 10
+set cshi .01
+vec/del m1
+vec/del m2
+vec/del m3
+vec/create m1(1) R 20
+vec/create m2(1) R 1300
+vec/create m3(1) R 1200
+
+graphics/view/size 40 40
+*hi/file 1 data.hbook
+*hi/file 22 mc.hbook
+hi/file 1 israll.hbook
+
+fort/file 66 nomplots.ps
+meta 66 -4221
+*opt logy
+opt liny
+***************************************
+*  ALL electron energy
+***************************************
+* php
+hi/op/add 300 303 1000
+hi/op/add 1000 306 1001
+* non dif
+hi/op/add 301 304 1002
+hi/op/add 1002 307 1003
+* dif
+hi/op/add 302 304 1004
+hi/op/add 1004 308 1005
+* all
+hi/op/add 1001 1003 1006
+hi/op/add 1006 1005 1007
+
+hi/pl 1007
+hi/pl 1005 sh
+hi/pl 1001 sh
+*cd //lun1
+hi/op/add 100 101 1008
+hi/op/add 1008 102 1009
+hi/pl 1009 se
+
+*************************************
+* Electron en in RCAL
+*************************************
+*cd //lun22
+hi/op/add 300 301 10000
+hi/op/add 10000 302 10001
+hi/pl 10001
+*cd //lun1
+hi/pl 100 se
+
+*************************************
+* Electron en in BCAL
+*************************************
+*cd //lun22
+hi/op/add 306 307 10002
+hi/op/add 10002 308 10003
+hi/pl 10003
+*cd //lun1
+hi/pl 102 se
+
+*************************************
+* Electron en in RCAL
+*************************************
+*cd //lun22c
+hi/op/add 303 304 10004
+hi/op/add 10004 305 10005
+hi/pl 10005
+*cd //lun1
+hi/pl 102 se
+
+*cd //lun22
+***********************************
+* ALL Q^2
+***********************************
+* php
+hi/op/add 309 350 10010
+hi/op/add 10010 353 10011
+
+* dif
+hi/op/add 311 352 10012
+hi/op/add 10012 355 10013
+
+*non dif
+hi/op/add 310 351 10014
+hi/op/add 10014 354 10015
+
+hi/op/add 10011 10013 10016
+hi/op/add 10016 10015 10017
+
+hi/pl 10017
+hi/pl 10013 sh
+hi/pl 10011 sh
+*cd //lun1
+hi/op/add 109 110 10018
+hi/op/add 10018 111 10019
+hi/pl 10019 se
+
+*cd //lun22
+* Etamax
+opt logy
+hi/op/add 318 319 1012
+hi/op/add 1012 320 1013
+hi/pl 1013
+hi/pl 320 sh
+hi/pl 318 sh
+hi/pl 319 sh
+*cd //lun1
+hi/pl 118 se
+
+opt liny
+*cd //lun22
+*pte/pth
+hi/op/add 330 331 1014
+hi/op/add 1014 332 1015
+hi/pl 1015
+hi/pl 112 sel 
+hi/pl 332 sh
+hi/pl 330 sh
+*cd //lun1
+hi/pl 130 se
+
+*Vertex
+*cd //lun22
+hi/op/add 321 324 1016
+hi/op/add 322 325 1017
+hi/op/add 323 326 1018
+hi/op/add 1016 1017 1019
+hi/op/add 1019 1018 1020
+
+hi/pl 1020
+hi/pl 1016 sh
+hi/pl 1018 sh
+*cd //lun1
+hi/op/add 121 122 1021
+hi/op/add 1021 123 1022
+hi/pl 1022 se
+
+* theta
+*cd //lun22
+hi/op/add 333 336 1023
+hi/op/add 334 337 1024
+hi/op/add 335 338 1025
+hi/op/add 1023 1024 1026
+hi/op/add 1026 1025 1027
+
+hi/pl 1027(2.5:3.2)
+hi/pl 1023 sh
+hi/pl 1025 sh
+*cd //lun1
+hi/op/add 133 134 1028
+hi/op/add 1028 135 1029
+hi/pl 1029 se
+
+* gamma
+*cd //lun22
+hi/op/add 339 340 1030
+hi/op/add 1030 341 1031
+hi/pl 1031
+hi/pl 339 sh
+hi/pl 341 sh
+*cd //lun1
+hi/pl 136 se
+
+close 66
+close 1
+*close 22
+
+return
+
+

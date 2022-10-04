@@ -1,0 +1,330 @@
+
+set fais 1
+
+set hwid 0
+set lwid 0
+set fwid 2
+set bwid 0
+set pwid 0
+ve/del *
+set chhe 0.3
+*size 30 15
+size 40 15
+*size 120 10
+zone 1
+set ncol 32
+
+coll = 1
+set dmod 1
+set fais 0
+*set fasi 0
+set faci [coll]
+
+
+set gsiz 0.7
+tit 'Luminosity Monitor 1996/7'
+
+set xsiz 0.2
+set vsiz 0.3
+set xlab 0.6
+set xval 0.1
+set ysiz 0.2
+set ylab 0.1
+set yval 0.1
+null 85 560 310 560 ab
+
+
+set tmsi 7
+set lasi 10
+set laof 7
+
+
+set  vsiz 0.5
+set asiz 0.4
+axis 97 97 310 566 -70  50 505 dhs
+set  vsiz 0.05
+*axis 97 530 320 320   0 110 510
+*axis 97 530 310 310   0 110  511
+set laof 10
+axis 97 530 310 310   0 110  515 dhs
+atit (m) (cm)
+ 
+
+set ncol 32
+
+
+ve/cre x1(4)  r 119 119 123 123 
+ve/cre y1(4)  r 416 506 506 416
+
+ set csiz 0.4
+ 
+ itx 107 445 8m
+ itx 120 395 QL
+
+ve/cre x1a(4) r 124 124 128 128 
+ve/cre y1a(4) r 416 506 506 416
+
+
+ve/cre x2(4)  r 129 129 137 137
+ve/cre y2(4)  r 391 529 529 391
+
+ve/cre x2a(4)  r 138 138 146 146
+ve/cre y2a(4)  r 391 529 529 391
+
+farea 4 x2a y2a
+
+itx 134 380 QC
+
+ve/cre x3(4)  r 147 147 153.3 153.5
+ve/cre y3(4)  r 363 561 559 361 
+
+itx 150 345 QB
+
+ve/cre x3a(4) r 154.5 154.5 162 162
+ve/cre y3a(4) r 361 559 555 358 
+
+
+
+ve/cre x4(4)  r 163 163 175.5 175.5
+ve/cre y4(4)  r 408 504 501 405
+
+itx 165 393 BH
+
+ve/cre x4a(4)  r 176.5 176.5 191 191
+ve/cre y4a(4)  r 405 501 495 399
+
+itx 180 387 BH
+
+* dline 176 176 500 404
+
+ve/cre x5(4)  r 192 192 202 202
+ve/cre y5(4)  r 448 495 495 448
+
+itx 192 500 BS
+
+* ve/cre x6(4)  r 204 204 250.5 250.5
+* ve/cre y6(4)  r 436 523 523 436
+*
+
+* ve/cre x6(4)  r 204 204 255 255
+* ve/cre y6(4)  r 436 523 523 436
+
+ve/cre x6(4)  r 204 204 220 220
+ve/cre y6(4)  r 436 523 523 436
+
+ve/cre x6a(4)  r 221 221 238 238
+ve/cre y6a(4)  r 436 523 523 436
+
+ve/cre x6b(4)  r 239 239 255 255
+ve/cre y6b(4)  r 436 523 523 436
+
+farea 4 x6a y6a 
+farea 4 x6b y6b 
+
+
+itx 204 526 '   QS       QS      QS'
+
+ve/cre x7(4)  r 257 257 268 268
+ve/cre y7(4)  r 416 508 508 416
+
+itx 258 512 QR
+
+ve/cre x8(4)  r 269 269 275 275
+ve/cre y8(4)  r 359 449 445 355
+
+
+
+
+itx 268 525 BZ
+ 
+ itx 248  380 44 m
+itx 268 345 QL
+
+ve/cre x9(4)  r 275 275 278 278
+ve/cre y9(4)  r 416 512 512 416
+
+itx 273 515 BR
+
+ve/cre x10(4) r 279 279 288 288
+ve/cre y10(4) r 420 508 508 420
+
+ve/cre x11(4) r 289 289 303 303
+ve/cre y11(4) r 414 510 510 414 
+
+ve/cre x12(4) r 308 308 319 319
+ve/cre y12(4) r 414 510 510 414 
+
+ve/cre x12a(4) r 320 320 332 332
+ve/cre y12a(4) r 414 510 510 414 
+
+farea 4 x12a y12a
+
+ve/cre x13(4) r 350 350 353 353
+ve/cre y13(4) r 415 511 511 415
+
+ve/cre x14(4) r 354 354 371 371
+ve/cre y14(4) r 407 517 517 407
+
+ve/cre x15(4) r 372 372 390 390
+ve/cre y15(4) r 407 517 517 407
+
+ve/cre x16(4) r 391 391 408 408
+ve/cre y16(4) r 407 517 517 407
+
+ve/cre x17(4) r 461 461 514 514 
+ve/cre y17(4) r 448 472 472 448
+
+ve/cre x18(4) r 515 515 518 518
+ve/cre y18(4) r 440 480 480 440
+
+ve/cre x19(4) r 519 519 522 522
+ve/cre y19(4) r 417 499 499 417
+
+
+itx x11(1)+4 y11(2)+5 QR
+itx x12(1)-0 y12(2)+5 '  QR   QR'
+itx x13(1)-8 y13(2)+5 BT
+itx x14(1)+5 y14(2)+5 BU
+itx x15(1)+5 y15(2)+5 BU
+itx x16(1)+5 y16(2)+5 BU
+
+ 
+
+
+ve/cre xe(4)  r 233 233 237 237
+ve/cre ye(4)  r 351 412 410 349
+
+farea 4 x1  y1
+farea 4 x1a y1a
+*co 0
+* dline 124 124 416 506
+*set faci [coll]
+farea 4 x2 y2
+farea 4 x3 y3
+farea 4 x3a y3a
+* dline 154 154 360 558
+farea 4 x4 y4
+farea 4 x4a y4a
+* dline 176 176 500 404
+farea 4 x5  y5
+farea 4 x6  y6
+*null  90 565 310 560 sab
+farea 4 x7  y7
+farea 4 x8  y8
+farea 4 x9  y9
+farea 4 x10 y10
+farea 4 x11 y11
+farea 4 x12 y12
+farea 4 x13 y13
+farea 4 x14 y14
+farea 4 x15 y15
+farea 4 x16 y16
+farea 4 x17 y17
+farea 4 x18 y18
+farea 4 x19 y19
+
+farea 4 xe ye
+dline  235 235 350 411 
+
+co 4
+ve/cre x44(4)  r 265 265 269 269 
+ve/cre y44(4)  r 374 403 403 374
+farea 4 x44 y44
+
+
+
+* goto cunt
+
+co [coll]
+set fais 3
+set fasi 254
+
+
+farea 4 x1   y1
+farea 4 x1a  y1a
+farea 4 x2   y2
+farea 4 x2a  y2a
+farea 4 x3   y3
+farea 4 x3a  y3a
+farea 4 x4   y4
+farea 4 x4a  y4a
+farea 4 x5   y5
+farea 4 x6   y6
+farea 4 x6a  y6a 
+farea 4 x6b  y6b 
+farea 4 x7   y7
+farea 4 x8   y8
+farea 4 x9   y9
+farea 4 x10  y10
+farea 4 x11  y11
+farea 4 x12  y12
+farea 4 x12a y12a
+farea 4 x13  y13
+farea 4 x14  y14
+farea 4 x15  y15
+farea 4 x16  y16
+farea 4 x17  y17
+farea 4 x18  y18
+farea 4 x19  y19
+farea 4 xe   ye
+
+co 4
+farea 4 x44 y44
+
+
+
+ cunt:
+
+
+
+set chhe 0.5
+itx xe(1)-15 ye(1)-15 'lumi-e'
+
+itx -7+(x5(1)+xe(1))/2.0 (ye(1)+ye(2))/2.0 'e''
+itx 105-7+(x5(1)+xe(1))/2.0 -10+(ye(1)+ye(2))/2.0 e
+
+itx x19(1)-60 y19(1)+10 'lumi-[g]'
+ 
+ itx 530 470 'p'
+ 
+
+co 1
+
+set dmod 4
+dline 80 540 460 460
+
+set dmod 1
+
+co 4
+dline 97 540 460 462
+co 1
+
+
+
+
+co 2
+
+null 93 117 -10 0.7 sab
+set dmod 2
+fun/plot   (97-x)*(0.5+atan(0.5*(x-97))/3.145)-4.12 94 100.5 s
+
+
+
+null 95 108 -11 1.18 sab
+set dmod 1
+fun/plot   (97-x)*(0.5+atan(0.5*(x-97))/3.145)-4.12 95 101 s
+*dline 100.6 101 -6.8 -7.5
+*dline 100.5 101 -7.4 -7.5
+
+opt grid
+null 0 10 0 10 sab
+
+
+
+co 1 
+
+
+
+
+
+

@@ -1,0 +1,61 @@
+macro dis
+***********
+
+igset bord 0
+opt nbox
+fort/file 66 dis.ps
+opt ndat
+meta 66 
+graphics/view/size 30 25
+nul 3 14.0 4 14.0 A
+
+Igset LWID 6 ; Igset FAIS 1
+
+* Arline x1 y1 x2 y2 Arrow size
+
+* Lepton
+Arline 4.0  11.0  8.0 11.0 0.3
+Arline 8.0 11.0 11.0 12.0 0.3
+
+* Outgoing fragment
+Arline 9.5 9.0 13.0 9.0 0.3
+
+*proton
+Arline 4.0 5.0 8.5 5.0 0.3
+Arline 4.0 5.5 8.5 5.5 0.3
+Arline 4.0 6.0 8.5 6.0 0.3
+Line 8.5 6.0 13.0 4.5
+Line 8.5 5.0 13.0 5.0
+Line 8.5 5.5 13.0 5.5
+
+*Virtual Photon
+*Helix x1 y1 x2 y2 size of helix #turns ?
+*Helix 8.0 11.0 10.0 8.0 0.3 20 30
+Helix 8.0 11.0 9.5 9.0 0.1 8 0
+
+arline 9.5 7.0 9.5 9.0 0.3
+arline 8.5 6.0 9.5 7.0 0.3
+Helix 9.5 7.0 13.0 7.0 0.2 8 50
+
+*Vertex 
+Fpoint 8.0 11.0 0.1
+Fpoint 9.5 9.0 0.1
+Fpoint 8.5 6.0 0.1
+fpoint 9.5 7.0 0.1
+
+Igset CHHE 0.35
+Itx 4.5 11.3 'e^-'
+*Itx 13.0 8.1 'e^-'
+Itx 4.5 6.2 'P'
+*Itx 10.0 6.8 '[g]'
+Itx 11.5 12.1 'e^-'
+*Itx 8.5 6.8 'q?2!^2'
+*Itx 10.0 9.0 'q?1!^2'
+
+close 66
+
+return
+
+
+
+

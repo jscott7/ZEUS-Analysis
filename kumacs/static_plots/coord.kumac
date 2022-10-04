@@ -1,0 +1,74 @@
+macro lumigeo
+***********
+
+vec/del x
+vec/del y
+vec/create x(1) R 4.
+vec/create y(1) R 1.
+fort/file 66 coord.ps
+opt ndat
+meta 66 -4121
+null -2. 8. -7. 7. ab
+graphics/view/size 20 15
+set pass 10
+set cshi 0.008
+
+set ltyp 1
+set lwid 6
+arrow 0. 5. 0. 5. 0.2
+arrow 0. 0. 0. 8. 0.2
+arrow 0. 5. 0. -5. 0.2
+arrow -1.5 -0.55 0.5 -0.45 0.2
+arrow 0.5 -0.45 -1.5 -0.55 0.2 
+set ltyp 2
+set lwid 1
+dline 4. 3. 1. 0.
+dline 3. 3. 0. -3.
+dline 4. 1. 1. 4.
+dline 1. 1. 4. 1.
+set ltyp 1
+dline 0. 1. 0. 4.
+dline 0. 3. 0. 0. 
+set mtyp 3
+pmarker 1 x y
+arc 0. -0.2 0.7 0.7 -30. 15.
+arc 0. 0.5 0.7 0.7 15. 65.
+
+text 0.8 -0.65 '[Q]' 0.35 0. 
+text 0.65 1.2 '[f]' 0.35 0. 
+text 5. 5.5 '+x axis' 0.35 0. 
+text 0.2 7.5 '+y axis' 0.35 0. 
+text 5. -5.5 '+z axis' 0.35 0. 
+text -1.8 0.5 'p' 0.35 0.
+text 0.54 -1.7 'e^+!' 0.35 0.
+
+
+close 66
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,34 @@
+macro resplot
+*************
+
+clr
+zone
+opt liny
+opt ngrid
+igset mscf 1.0
+
+vec/del resolution
+vec/del mctrue
+
+vec/cre resolution(20) R
+vec/cre mctrue(20) R
+vec/cre scale(20) R 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20
+
+vec/read resolution fort.92
+vec/read mctrue fort.93
+
+vec/plot resolution%scale 100
+
+for/file 66 res.ps
+meta 66 -4221
+
+opt nstat
+set vsiz 1
+igset mscf 1
+igset mtyp 24
+
+hi/pl 100
+
+close 66
+
+return

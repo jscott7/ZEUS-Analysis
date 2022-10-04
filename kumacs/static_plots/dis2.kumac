@@ -1,0 +1,36 @@
+macro dis2
+
+opt ndat
+opt nstat
+set pass 10
+set cshi 0.008
+igset bord 0
+opt nbox
+fort/file 66 dis2.ps
+opt ndat
+meta 66 
+
+graphics/view/size 30 25
+nul 3 14.0 4 14.0 ab
+
+Igset LWID 6 ; Igset FAIS 1
+arc 8. 6. 0.5 0.5 ! ! 
+helix 8.0 6.5 8.0 10. 0.1 8 0
+arline 4. 12. 8. 10. 0.3
+arline 8. 10. 12. 12. 0.3
+arline 4. 5. 7.5 6. 0.3
+arline 8.45 6.2 12. 7. 0.3
+arline 8.5 6.0 12. 6.2 0.3
+arline 8.5 5.9 12. 5.5 0.3
+arline 8.4 5.7 12. 4.7 0.3
+arrow 8.5 8.5 9. 8. 0.2
+
+Igset CHHE 0.9
+Itx 4.5 12.1 'e^+!(k)'
+Itx 12.5 5.5 'W'
+Itx 5. 6. 'P(p)'
+Itx 10.5 12.2 'e^+!(k)'
+Itx 8.7 8.5 'q'
+
+close 66
+

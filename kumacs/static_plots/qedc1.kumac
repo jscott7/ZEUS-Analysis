@@ -1,0 +1,97 @@
+macro qedc1
+***********
+
+fort/file 66 qedc1.ps
+opt ndat
+meta 66 -4221
+graphics/view/size 30 25
+nul 3 14.0 4 14.0 ab
+
+Igset LWID 6 ; Igset FAIS 1
+
+* Lepton
+Arline 5.0  12.0  8.0 10.0 0.3
+Arline 8.0  10.0  10.0 8.0 0.3
+Arline 10.0 8.0 13.0 8.0 0.3
+
+*proton
+Arline 5.0 5.0 8.5 5.0 0.3
+Arline 5.0 5.5 8.5 5.5 0.3
+Arline 5.0 6.0 8.5 6.0 0.3
+Line 8.5 6.0 13.0 4.5
+Line 8.5 5.0 13.0 5.0
+Line 8.5 5.5 13.0 5.5
+
+*Outgoing Photon
+Helix 8.0 10.0 11.0 12.0 0.1 4 0
+
+*Virtual Photon
+Helix 8.5 6.0 10.0 8.0 0.1 4 0
+
+*Vertex 
+Fpoint 8.0 10.0 0.1
+Fpoint 10.0 8.0 0.1
+Fpoint 8.5 6.0 0.1
+
+Igset CHHE 0.9
+Itx 4.5 12.1 'e^-'
+Itx 13.0 7.5 'e^-'
+Itx 5.5 6.4 'P'
+Itx 10.0 6.8 '[g]'
+Itx 11.2 12.2 '[g]'
+Itx 8.5 7. 'q?2!^2'
+Itx 9.5 9.0 'q?1!^2'
+
+clr
+* Second diagram
+nul 3 14.0 4 14.0 ab
+Igset LWID 6 ; Igset FAIS 1
+
+* Lepton
+Arline 5.0  11.0  8.0 9.0 0.3
+Arline 8.0  9.0  10.0 9.0 0.3
+Arline 10.0 9.0 13.0 8.0 0.3
+
+*proton
+Arline 4.0 6.0 6.0 6.0 0.3
+Arline 4.0 6.5 6.0 6.5 0.3
+Line 6.0 6.0 13.0 6.0
+Line 6.0 6.5 13.0 6.5
+* Struck Quark
+Arline 4.0 7.0 6.0 7.0 0.3
+Line 6.0 7.0 13.0 5.5
+
+Line 8.5 6.0 13.0 6.0
+Line 8.5 6.5 13.0 6.5
+
+*Outgoing Photon
+Helix 10.0 9.0 13.0 11.0 0.1 4 0
+
+*Virtual Photon
+Helix 6.0 7.0 8.0 9.0 0.1 4 0
+
+*Vertex 
+Fpoint 8.0 9.0 0.1
+Fpoint 10.0 9.0 0.1
+Fpoint 6.0 7.0 0.1
+
+Igset CHHE 0.9
+Itx 4.5 11.0 'e^-'
+Itx 13. 7.5 'e^-'
+Itx 4.5 7.2 'P'
+Itx 7.5 7.8 '[g]'
+Itx 13. 11.5 '[g]'
+Itx 6.5 8.4 'q?2!^2'
+Itx 8.9 9.4 'q?1!^2'
+
+
+close 66
+
+
+
+
+
+
+
+
+

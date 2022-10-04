@@ -1,0 +1,40 @@
+macro dis3
+
+opt ndat
+opt stat
+set pass 10
+set cshi 0.008
+igset bord 0
+opt nbox
+fort/file 66 dis3.ps
+opt ndat
+meta 66 
+
+graphics/view/size 30 25
+nul 3 14.0 4 14.0 ab
+
+Igset LWID 6 ; Igset FAIS 1
+helix 8.0 7.0 8.0 10. 0.1 8 0
+arline 4. 12. 8. 10. 0.3
+arline 8. 10. 12. 12. 0.3
+arline 4. 5. 8. 7. 0.3
+arline 8. 7. 12. 5. 0.3
+
+arrow 5. 6. 12. 11.5 0.2 
+arrow 5. 6. 5. 5.5 0.2
+arrow 10. 11. 11.5 12. 0.2
+arrow 10. 11. 5.5 5. 0.2
+arrow 8.7 8.7 9. 8. 0.2
+
+igset CHHE 0.9
+itx 4.5 12.5 'P?a!'
+itx 11. 12.5 'P?b!'
+itx 4.5 4.5 'P?c!'
+itx 11. 4.5 'P?d!'
+itx 3.4 12. 'e^+'
+itx 12.2 12. 'e^+'
+itx 3.4 5. '[m]^-'
+itx 12.2 5. '[m]^-'
+itx 9. 8.5 'q'
+close 66
+

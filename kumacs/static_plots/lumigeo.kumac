@@ -1,0 +1,31 @@
+macro lumigeo
+***********
+
+fort/file 66 lumigeo.ps
+opt ndat
+meta 66 -4121
+null -8. 8. -6. 6.
+graphics/view/size 20 15
+set pass 10
+set cshi 0.008
+
+line -6.5 1.5 -6.5 -2.5
+line -6.5 -2.5 -5.5 -4.
+line -5.5 -4. 1. -4.
+line 1. -4. 3.05 -2.
+line 3.05 -2. 3.05 2.
+line 3.05 2. 0.5 4.
+line 0.5 4. -4. 4.
+line -4. 4. -6.5 1.5
+text 5. -7.25 'x (cm)' 0.5 0
+text -9. 4. 'y (cm)' 0.5 90
+
+*1d 100 ' ' 100 -8. 8.
+*hi/set/max 100 6.
+*hi/set/min 100 -6.
+
+close 66
+
+
+
+

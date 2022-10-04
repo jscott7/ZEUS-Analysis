@@ -1,0 +1,34 @@
+macro dis3
+
+opt ndat
+opt nstat
+set pass 10
+set cshi 0.008
+igset bord 0
+opt nbox
+fort/file 66 dis4.ps
+meta 66 
+
+graphics/view/size 30 25
+nul 3 14.0 4 14.0 ab
+
+Igset LWID 6 ; Igset FAIS 1
+helix 8.0 7.5 8.0 10. 0.1 8 0
+arline 4. 12. 8. 10. 0.3
+arline 8. 10. 12. 12. 0.3
+arline 4. 5. 7.5 7. 0.3
+arline 8.5 7. 12. 5. 0.3
+arrow 8.5 8.5 9.2 8.2  0.2 
+arc 8. 7. 0.5 0.5 ! !
+
+Igset CHHE 0.9
+
+Itx 2.6 12. 'e^+!(k)'
+Itx 2.7 5. 'P(p)'
+itx 8.7 8.6 'q'
+Itx 12.2 12. 'e^+!(k)'
+Itx 12.2 5. 'P(p^[\256]!)'
+
+
+close 66
+

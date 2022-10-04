@@ -1,0 +1,50 @@
+macro resol
+************
+
+clr
+zone
+opt liny
+opt ndat
+set errx 0.5
+
+igset mscf 1.5
+graphics/view/size 40 20
+
+hi/file 1 elmc.hbook
+
+hi/op/subtract 206 289 300
+hi/op/divide 300 289 301
+
+hi/op/subtract 221 298 400
+hi/op/divide 400 298 401
+
+hi/op/subtract 224 297 500
+hi/op/divide 500 297 501
+
+hi/set/max 301 1
+hi/set/min 301 -1
+hi/set/max 401 1
+hi/set/min 401 -1
+hi/set/max 501 1
+hi/set/min 501 -1
+
+fortran/file 66 res.ps
+meta 66 -4121
+
+hi/pl 301 option=e
+set ltyp 3
+dline 0 250 0.2 0.2
+dline 0 250 -0.2 -0.2
+
+hi/pl 401 option=e
+set ltyp 3
+dline -5. 0. 0.2 0.2
+dline -5. 0. -0.2 -0.2 
+
+hi/pl 501 option=e
+
+close 66
+close 1
+
+return
+
