@@ -1,0 +1,90 @@
+macro datacontrol
+*************
+
+opt ndat
+*opt stat
+set hcol 2
+set htyp 144
+set mtyp 20
+set mscf 3
+hi/file 1 H:\analysis\jons_f2isr\isrdata96.hbook
+hi/file 22 H:\analysis\jons_f2isr\bgd.hist_756
+
+fort/file 66 H:\analysis\jons_f2isr\datacontrol1.ps
+meta 66 -4221
+
+cd //lun1 
+set hcol 0
+hi/pl 120 e
+set hcol 4
+cd //lun22
+set htyp 745
+hi/pl 1000 sh
+
+cd //lun1 
+set hcol 0
+hi/pl 122 e
+set hcol 4
+cd //lun22
+set htyp 745
+hi/pl 1001 sh
+
+cd //lun1 
+set hcol 0
+hi/pl 121 e
+set hcol 4
+cd //lun22
+set htyp 745
+hi/pl 1003 sh
+
+cd //lun1 
+set hcol 0
+hi/pl 113 e
+cd //lun22
+set hcol 4
+set htyp 745
+hi/pl 1019 sh
+
+close 66
+fort/file 77 H:\analysis\jons_f2isr\datacontrol2.ps
+meta 77 -4221
+
+cd //lun1 
+set hcol 0
+hi/pl 112 e
+set hcol 4
+set htyp 745
+cd //lun22
+hi/pl 1002 sh
+
+cd //lun1
+set hcol 0
+hi/pl 118 e
+set hcol 4
+set htyp 745
+cd //lun22
+hi/pl 1010 sh
+
+cd //lun1
+set hcol 0
+hi/pl 105 e
+set hcol 4
+cd //lun22
+set htyp 745
+hi/pl 1006 sh
+hi/pl 1056 sh
+
+cd //lun1
+set hcol 0
+hi/pl 131 e
+set hcol 4
+set htyp 745
+cd //lun22
+hi/pl 1013 sh
+
+close 77
+close 1
+close 22
+
+return
+

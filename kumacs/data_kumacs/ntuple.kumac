@@ -1,0 +1,36 @@
+macro ntuple
+************
+
+hi/file 1 d:\isrdata\ntuple.rz 4096
+
+fort/file 66 ntuple.ps
+meta 66 -4221
+
+nt/pl 10.trigdat
+nt/pl 10.trigdat(4) trigdat(4).gt.0.and.trigdat(4).lt.60
+nt/pl 10.vct_xvc vct_xvc.gt.-100
+nt/pl 10.vct_yvc vct_yvc.gt.-100.
+nt/pl 10.vct_zvc vct_zvc.gt.-400.
+nt/pl 10.cal_ee cal_ee.lt.50
+nt/pl 10.cal_xp
+nt/pl 10.cal_yp
+nt/pl 10.cal_zp
+nt/pl 10.srtd_e
+nt/pl 10.srtd_x
+nt/pl 10.srtd_y
+nt/pl 10.hes_x
+nt/pl 10.hes_y
+nt/pl 10.hes_e
+nt/pl 10.prse2
+nt/pl 10.ene_lg
+nt/pl 10.ene_le ene_le.gt.-100.
+nt/pl 10.zpzbsp
+nt/pl 10.zpzcal
+nt/pl 10.zpxcal
+nt/pl 10.zpycal
+nt/pl 10.zebsp zebsp.lt.5.
+
+close 1
+close 66
+
+

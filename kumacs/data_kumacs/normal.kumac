@@ -1,0 +1,63 @@
+macro normal
+************
+
+opt stat
+opt liny
+
+hi/file 22 H:\analysis\jons_f2isr\israll.hbook
+*hi/file 22 H:\analysis\newf2\isrbkgrnd.hbook
+hi/pl 203
+hi/pl 205
+
+hi/file 33 H:\analysis\jons_f2isr\isrdata96.hbook
+hi/pl 103
+hi/pl 105
+
+*bin= $HINFO(103,'XBINS')
+*bin2 = $HINFO(105,'XBINS')
+
+vec/del bak
+vec/del dat
+vec/del totbak
+
+vec/create bak(50) r
+vec/create dat(50) r
+vec/create totbak(100) r
+
+hi/get_vec/cont 205 totbak
+baktotal = $sigma(vsum(totbak))
+
+hi/get_vec/cont 203 bak
+hi/get_vec/cont 103 dat
+
+t1 = $sigma(vsum(bak))
+t2 = $sigma(vsum(dat))
+
+factor = [t2]/[t1]
+new = [factor]*[baktotal]
+
+mess ' #Bak > 62:' [t1]
+mess ' #dat > 62:' [t2]
+mess ' Normalisation factor is:' [factor]
+mess ' Normalise background to:' [new]
+
+normalize 205 [new]
+
+fort/file 66 H:\analysis\jons_f2isr\bak.ps
+meta 66 -4221
+
+hi/pl 105
+hi/pl 205 s
+opt logy
+hi/pl 105
+hi/pl 205 s
+
+close 66
+close 22
+*close 33
+
+*return
+
+
+
+

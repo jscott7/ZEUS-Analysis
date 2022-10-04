@@ -1,0 +1,20 @@
+macro dataplots
+***************
+
+opt stat
+hi/file 1 H:\analysis\jons_f2isr\isrdata96.hbook
+fort/file 66 H:\analysis\jons_f2isr\dataplots.ps
+meta 66 -4221
+
+hi/pl 120
+hi/pl 121
+hi/pl 122
+hi/pl 114
+hi/pl 113
+hi/pl 131
+hi/pl 132
+hi/pl 112
+hi/pl 130
+
+close 66
+close 1

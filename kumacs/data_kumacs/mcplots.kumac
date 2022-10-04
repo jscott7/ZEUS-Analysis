@@ -1,0 +1,15 @@
+macro mcplots
+***************
+
+opt stat
+hi/file 1 H:\analysis\jons_f2isr\isrmc.hbook
+fort/file 66 H:\analysis\jons_f2isr\mcplots.ps
+meta 66 -4221
+
+hi/pl 320
+hi/pl 321
+hi/pl 322
+hi/pl 314
+
+close 66
+close 1

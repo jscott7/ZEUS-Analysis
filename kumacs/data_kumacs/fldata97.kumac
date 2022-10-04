@@ -1,0 +1,46 @@
+macro fldata
+***************
+
+opt ndat
+opt stat
+
+hi/file 1 H:\analysis\fl_isr\isrdata97.hbook
+hi/file 22 H:\analysis\fl_isr\bgd.hist_669
+fort/file 66 H:\analysis\fl_isr\dataplots97.ps
+meta 66 -4221
+
+hi/pl 1003 
+cd //lun1
+hi/pl 121 se
+
+cd //lun22
+hi/pl 1001
+cd //lun1
+hi/pl 122 se
+
+cd //lun22
+hi/pl 1019
+cd //lun1
+hi/pl 113 se
+
+cd //lun22
+hi/pl 1009
+cd //lun1
+hi/pl 160 se
+
+cd //lun22
+hi/pl 1000
+cd //lun1
+hi/pl 120 se
+
+cd //lun22
+hi/pl 1006 
+hi/pl 1056 sh
+cd //lun1
+hi/pl 105 se
+
+close 66
+close 1
+close 22
+
+

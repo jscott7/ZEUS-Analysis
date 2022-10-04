@@ -1,0 +1,35 @@
+macro bakplots
+**************
+
+opt stat
+hi/file 44 H:\analysis\newf2\isrbkgrnd.hbook
+hi/file 33 H:\analysis\jons_f2isr\bgd.hist_397
+
+fort/file 66 H:\analysis\jons_f2isr\bakplots.ps
+meta 66 -4221
+
+cd //lun33
+hi/pl 1200
+cd //lun44
+hi/pl 220 se
+
+cd //lun33
+hi/pl 1201
+cd //lun44
+hi/pl 222 se
+
+cd //lun33
+hi/pl 1203
+cd //lun44
+hi/pl 221 se
+
+cd //lun33
+hi/pl 1209
+cd //lun44
+hi/pl 213 se
+
+close 66
+close 44
+close 33
+
+return

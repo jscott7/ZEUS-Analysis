@@ -1,0 +1,52 @@
+macro mccontrol
+*************
+
+opt stat
+hi/file 1 H:\analysis\jons_f2isr\israll.hbook
+hi/file 22 H:\analysis\jons_f2isr\bgd.hist_756
+
+fort/file 66 H:\analysis\jons_f2isr\mccontrol.ps
+meta 66 -4221
+
+cd //lun1 
+hi/pl 308 e
+cd //lun22
+hi/pl 1100 sh
+
+cd //lun1 
+hi/pl 322 e
+cd //lun22
+hi/pl 1101 sh
+
+cd //lun1 
+hi/pl 321 e
+cd //lun22
+hi/pl 1103 sh
+
+cd //lun1 
+hi/pl 313 e
+cd //lun22
+hi/pl 1119 sh
+
+cd //lun1
+hi/pl 318 e
+cd //lun22
+hi/pl 1110 sh
+
+cd //lun1
+hi/pl 305 e
+cd //lun22
+hi/pl 1106 sh
+hi/pl 1156 sh
+
+cd //lun1
+hi/pl 331 e
+cd //lun22
+hi/pl 1113 sh
+
+close 66
+close 1
+close 22
+
+return
+

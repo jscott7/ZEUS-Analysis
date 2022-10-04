@@ -1,0 +1,52 @@
+macro bakcontrol
+*************
+
+opt stat
+hi/file 1 H:\analysis\jons_f2isr\israll.hbook
+hi/file 22 H:\analysis\jons_f2isr\bgd.hist_756
+
+fort/file 66 H:\analysis\jons_f2isr\bakcontrol.ps
+meta 66 -4221
+
+cd //lun1 
+hi/pl 208 e
+cd //lun22
+hi/pl 1200 sh
+
+cd //lun1 
+hi/pl 222 e
+cd //lun22
+hi/pl 1201 sh
+
+cd //lun1 
+hi/pl 221 e
+cd //lun22
+hi/pl 1203 sh
+
+cd //lun1 
+hi/pl 213 e
+cd //lun22
+hi/pl 1219 sh
+
+cd //lun1
+hi/pl 218 e
+cd //lun22
+hi/pl 1210 sh
+
+cd //lun1
+hi/pl 205 e
+cd //lun22
+hi/pl 1206 sh
+hi/pl 1256 sh
+
+cd //lun1
+hi/pl 231 e
+cd //lun22
+hi/pl 1213 sh
+
+close 66
+close 1
+close 22
+
+return
+
