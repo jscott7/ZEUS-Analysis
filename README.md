@@ -52,12 +52,25 @@ Output
 * fort.506 : ytilts (97) 
 * fort.507 : yspreads (97)
 
-### Interpret Results
+## Interpret Results
 
-This is done using PAW. Open PAW and Enter:
+This is done using  Physics Analysis Workstation (PAW). 
 
+To open an ntuple, run paw from the command line in the exe folder and enter:
+
+```
 \>hi/file 1 israll97.hbook
-
 \>hi/li 
-
 \>hi/pl 105
+```
+
+### Kumacs
+Kumac files are macros that can be loaded to run multiple complex commands in PAW
+
+As an example, open PAW in the kumacs/statis_plots folder and run 
+
+```
+exec isr
+```
+
+This will create a plot of an DIS-ISR Feynman diagram
