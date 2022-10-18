@@ -1,3 +1,5 @@
+* Feynman Diagram for Deep Inelastic Scattering event
+
 macro dis
 ***********
 
@@ -55,7 +57,3 @@ Itx 11.5 12.1 'e^-'
 close 66
 
 return
-
-
-
-
