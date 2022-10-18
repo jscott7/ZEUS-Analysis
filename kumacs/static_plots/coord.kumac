@@ -1,4 +1,6 @@
-macro lumigeo
+* Plots the ZEUS Coordindates
+
+macro coord
 ***********
 
 vec/del x
@@ -44,31 +46,3 @@ text 0.54 -1.7 'e^+!' 0.35 0.
 
 
 close 66
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

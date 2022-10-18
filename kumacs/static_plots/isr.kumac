@@ -1,5 +1,7 @@
-macro dis
-***********
+* Feynman diagram of Deep Ineslatic Scattering event with ISR 
+
+macro isr
+*********
 
 fort/file 66 isr.ps
 opt ndat
@@ -53,7 +55,3 @@ itx 13.5 7.0 'X'
 close 66
 
 return
-
-
-
-
